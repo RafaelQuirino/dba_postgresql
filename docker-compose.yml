@@ -14,7 +14,10 @@ services:
       - 5432:5432
 
   pgadmin:
-    image: dpage/pgadmin4
+    # image: dpage/pgadmin4
+    build:
+      context: .
+      dockerfile: Dockerfile.pgadmin
     container_name: pgadmin
     restart: always
     environment:
@@ -25,7 +28,25 @@ services:
       - ./conf/pgadmin_servers.json:/pgadmin4/servers.json
       - pgadmin_data:/var/lib/pgadmin
     ports:
-      - 8080:80
+      - 9090:80
+    depends_on: 
+      - postgresql
+
+  python-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: python-app
+    volumes:
+      - ./app:/app
+    environment:
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_NAME: dados_juridicos
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+    depends_on: 
+      - postgresql
 
 volumes:
   pg_data:
