@@ -41,7 +41,7 @@ services:
     environment:
       DB_HOST: postgresql
       DB_PORT: 5432
-      DB_NAME: pubs_txt_db
+      DB_NAME: cinetech_productions
       DB_USER: postgres
       DB_PASSWORD: postgres123
     depends_on: 
@@ -57,7 +57,7 @@ services:
     environment:
       DB_HOST: postgresql
       DB_PORT: 5432
-      DB_NAME: pubs_json_db
+      DB_NAME: cinetech_productions
       DB_USER: postgres
       DB_PASSWORD: postgres123
     depends_on:

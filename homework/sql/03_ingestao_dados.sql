@@ -1,0 +1,4 @@
+-- 3) Ingestão de dados
+-- python ingestao_dados.py /app/pessoacopy.txt pessoa '(pessoaID,nome)' 'int,string'
+-- python ingestao_dados.py /app/producao.txt producao '(producaoID,titulo,ano_producao,tipo_ID)' 'int,string,int,int'
+-- python ingestao_dados.py /app/equipe.txt equipe '(pessoaID,producaoID,papel)' 'int,int,string'
