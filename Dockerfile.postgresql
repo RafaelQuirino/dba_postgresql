@@ -1,0 +1,16 @@
+FROM postgres:17
+
+# Install repmgr
+RUN apt-get update && apt-get install -y \
+    postgresql-17-repmgr \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create repmgr user and database
+RUN echo "CREATE USER repmgr WITH SUPERUSER PASSWORD 'repmgr123';" > /docker-entrypoint-initdb.d/01-create-repmgr-user.sql
+RUN echo "CREATE DATABASE repmgr OWNER repmgr;" >> /docker-entrypoint-initdb.d/01-create-repmgr-user.sql
+
+# Create log directory
+RUN mkdir -p /var/log/repmgr
+
+# Set proper permissions
+RUN chown -R postgres:postgres /var/log/repmgr 

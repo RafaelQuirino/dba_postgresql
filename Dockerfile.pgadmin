@@ -1,5 +1,2 @@
 FROM dpage/pgadmin4:latest
-USER root
-RUN apk add --no-cache zstd-libs
-USER pgadmin
 

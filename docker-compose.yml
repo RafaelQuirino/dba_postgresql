@@ -1,18 +1,122 @@
 services:
 
-  postgresql:
-    image: postgres:17
-    container_name: postgresql
+  # Primary PostgreSQL node
+  postgresql-primary:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgresql
+    container_name: postgresql-primary
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: postgres
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_primary_data:/var/lib/postgresql/data
+      - ./conf/postgresql-primary.conf:/etc/postgresql/postgresql.conf
+      - ./conf/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./conf/repmgr-primary.conf:/etc/repmgr.conf
     expose:
       - 5432
     ports:
       - 5432:5432
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.2
 
+  # Standby PostgreSQL node
+  postgresql-standby:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgresql
+    container_name: postgresql-standby
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: postgres
+    volumes:
+      - pg_standby_data:/var/lib/postgresql/data
+      - ./conf/postgresql-standby.conf:/etc/postgresql/postgresql.conf
+      - ./conf/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./conf/repmgr-standby.conf:/etc/repmgr.conf
+    expose:
+      - 5432
+    ports:
+      - 5433:5432
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    depends_on:
+      - postgresql-primary
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.3
+
+  # Witness node for quorum
+  postgresql-witness:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgresql
+    container_name: postgresql-witness
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: postgres
+    volumes:
+      - pg_witness_data:/var/lib/postgresql/data
+      - ./conf/postgresql-witness.conf:/etc/postgresql/postgresql.conf
+      - ./conf/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./conf/repmgr-witness.conf:/etc/repmgr.conf
+    expose:
+      - 5432
+    ports:
+      - 5434:5432
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    depends_on:
+      - postgresql-primary
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.4
+
+  # HAProxy for load balancing
+  haproxy:
+    image: haproxy:2.8
+    container_name: haproxy
+    volumes:
+      - ./conf/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - 5000:5000
+      - 8404:8404
+    depends_on:
+      - postgresql-primary
+      - postgresql-standby
+      - postgresql-witness
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.5
+
+  # Repmgr management container
+  repmgr-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.repmgr
+    container_name: repmgr-manager
+    volumes:
+      - ./conf/repmgr-manager.conf:/etc/repmgr.conf
+      - ./scripts:/scripts
+    environment:
+      DB_HOST: postgresql-primary
+      DB_PORT: 5432
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+    depends_on:
+      - postgresql-primary
+      - postgresql-standby
+      - postgresql-witness
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.6
+
+  # PgAdmin for management
   pgadmin:
     build:
       context: .
@@ -29,8 +133,12 @@ services:
     ports:
       - 8080:80
     depends_on: 
-      - postgresql
+      - postgresql-primary
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.7
 
+  # Application containers
   pubs-txt:
     build:
       context: .
@@ -39,13 +147,16 @@ services:
     volumes:
       - ./apps/pubs_txt:/app
     environment:
-      DB_HOST: postgresql
-      DB_PORT: 5432
+      DB_HOST: haproxy
+      DB_PORT: 5000
       DB_NAME: pubs_txt_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
     depends_on: 
-      - postgresql
+      - haproxy
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.8
 
   pubs-json:
     build:
@@ -55,15 +166,27 @@ services:
     volumes:
       - ./apps/pubs_json:/app
     environment:
-      DB_HOST: postgresql
-      DB_PORT: 5432
+      DB_HOST: haproxy
+      DB_PORT: 5000
       DB_NAME: pubs_json_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
     depends_on:
-      - postgresql
+      - haproxy
+    networks:
+      postgres_network:
+        ipv4_address: 172.18.0.9
 
 volumes:
-  pg_data:
+  pg_primary_data:
+  pg_standby_data:
+  pg_witness_data:
   pgadmin_data:
+
+networks:
+  postgres_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
 

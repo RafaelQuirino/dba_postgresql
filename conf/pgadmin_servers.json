@@ -1,14 +1,76 @@
 {
-  "Servers": {
-    "1": {
-      "Name": "postgres-server",
-      "Group": "Servers",
-      "Port": 5432,
-      "Username": "postgres",
-      "Host": "postgresql",
-      "PassFile": "/pgadmin4/pass",
-      "SSLMode": "disable",
-      "MaintenanceDB": "postgres"
+    "Servers": {
+        "1": {
+            "Name": "PostgreSQL HA Cluster",
+            "Group": "Servers",
+            "Host": "haproxy",
+            "Port": 5000,
+            "MaintenanceDB": "postgres",
+            "Username": "postgres",
+            "SSLMode": "prefer",
+            "SSLCert": "<STORAGE_DIR>/.postgresql/postgresql.crt",
+            "SSLKey": "<STORAGE_DIR>/.postgresql/postgresql.key",
+            "SSLCompression": 0,
+            "Timeout": 10,
+            "UseSSHTunnel": 0,
+            "TunnelHost": "",
+            "TunnelPort": "22",
+            "TunnelUsername": "",
+            "TunnelAuthentication": 0
+        },
+        "2": {
+            "Name": "PostgreSQL Primary",
+            "Group": "Servers",
+            "Host": "postgresql-primary",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "postgres",
+            "SSLMode": "prefer",
+            "SSLCert": "<STORAGE_DIR>/.postgresql/postgresql.crt",
+            "SSLKey": "<STORAGE_DIR>/.postgresql/postgresql.key",
+            "SSLCompression": 0,
+            "Timeout": 10,
+            "UseSSHTunnel": 0,
+            "TunnelHost": "",
+            "TunnelPort": "22",
+            "TunnelUsername": "",
+            "TunnelAuthentication": 0
+        },
+        "3": {
+            "Name": "PostgreSQL Standby",
+            "Group": "Servers",
+            "Host": "postgresql-standby",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "postgres",
+            "SSLMode": "prefer",
+            "SSLCert": "<STORAGE_DIR>/.postgresql/postgresql.crt",
+            "SSLKey": "<STORAGE_DIR>/.postgresql/postgresql.key",
+            "SSLCompression": 0,
+            "Timeout": 10,
+            "UseSSHTunnel": 0,
+            "TunnelHost": "",
+            "TunnelPort": "22",
+            "TunnelUsername": "",
+            "TunnelAuthentication": 0
+        },
+        "4": {
+            "Name": "PostgreSQL Witness",
+            "Group": "Servers",
+            "Host": "postgresql-witness",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "postgres",
+            "SSLMode": "prefer",
+            "SSLCert": "<STORAGE_DIR>/.postgresql/postgresql.crt",
+            "SSLKey": "<STORAGE_DIR>/.postgresql/postgresql.key",
+            "SSLCompression": 0,
+            "Timeout": 10,
+            "UseSSHTunnel": 0,
+            "TunnelHost": "",
+            "TunnelPort": "22",
+            "TunnelUsername": "",
+            "TunnelAuthentication": 0
+        }
     }
-  }
 }
