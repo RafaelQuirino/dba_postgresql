@@ -63,6 +63,23 @@ services:
     depends_on:
       - postgresql
 
+
+  trabalho-final:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: trabalho-final
+    volumes:
+      - ./apps/trabalho_final:/app
+    environment:
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_NAME: cinetech_productions
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+    depends_on:
+      - postgresql
+
 volumes:
   pg_data:
   pgadmin_data:
