@@ -1,5 +1,4 @@
 services:
-
   postgresql:
     image: postgres:17
     container_name: postgresql
@@ -8,10 +7,52 @@ services:
       POSTGRES_PASSWORD: postgres123
     volumes:
       - pg_data:/var/lib/postgresql/data
-    expose:
-      - 5432
     ports:
-      - 5432:5432
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- SERVIÇO DE INICIALIZAÇÃO PARA PUBS_TXT ---
+  init-pubs-txt:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    command: >
+      sh -c "./wait-for-it.sh postgresql flask init-db"
+    environment:
+      # Variáveis para a conexão e para o comando flask
+      FLASK_APP: "run.py" # ou o nome do seu arquivo principal do Flask
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_NAME: pubs_txt_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_SCHEMA: "raw_data" # Defina o schema aqui
+    depends_on:
+      postgresql:
+        condition: service_healthy # Espera o banco ficar saudável
+
+  # --- SERVIÇO DE INICIALIZAÇÃO PARA PUBS_JSON ---
+  init-pubs-json:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    command: >
+      sh -c "./wait-for-it.sh postgresql flask init-db"
+    environment:
+      FLASK_APP: "run.py" 
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_NAME: pubs_json_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_SCHEMA: "json_data" # Um schema diferente, por exemplo
+    depends_on:
+      postgresql:
+        condition: service_healthy
 
   pgadmin:
     build:
@@ -28,42 +69,50 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     ports:
       - 8080:80
-    depends_on: 
-      - postgresql
+    depends_on:
+      postgresql:
+        condition: service_healthy
 
   pubs-txt:
     build:
       context: .
       dockerfile: Dockerfile.python
     container_name: pubs-txt
+    command: ["flask", "run", "--host=0.0.0.0"] # Comando para rodar a aplicação
     volumes:
       - ./apps/pubs_txt:/app
     environment:
+      FLASK_APP: "run.py" 
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_NAME: pubs_txt_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
-    depends_on: 
-      - postgresql
+      DB_SCHEMA: "raw_data"
+    depends_on:
+      init-pubs-txt: # Espera o serviço de init terminar
+        condition: service_completed_successfully
 
   pubs-json:
     build:
       context: .
       dockerfile: Dockerfile.python
     container_name: pubs-json
+    command: ["flask", "run", "--host=0.0.0.0"] # Comando para rodar a aplicação
     volumes:
       - ./apps/pubs_json:/app
     environment:
+      FLASK_APP: "run.py"
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_NAME: pubs_json_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
+      DB_SCHEMA: "json_data"
     depends_on:
-      - postgresql
+      init-pubs-json: # Espera o serviço de init terminar
+        condition: service_completed_successfully
 
 volumes:
   pg_data:
   pgadmin_data:
-
