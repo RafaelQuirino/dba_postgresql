@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS raw_data.pessoas (
 CREATE TABLE IF NOT EXISTS raw_data.equipes (
     pessoa_id INT NOT NULL,
     producao_id INT NOT NULL,
-    papel VARCHAR(255) NOT NULL
+    papel TEXT NOT NULL,
+    PRIMARY KEY (pessoa_id, producao_id),
+    FOREIGN KEY (pessoa_id) REFERENCES raw_data.pessoas(pessoa_id),
+    FOREIGN KEY (producao_id) REFERENCES raw_data.producoes(producao_id)
 );
 
