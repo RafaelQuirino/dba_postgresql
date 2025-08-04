@@ -14,18 +14,19 @@ Este script Python realiza a leitura de arquivos `.txt`, extrai os dados separad
 ---
 
 ### ⚙️ Como executar
-
-1. Buildar e subir o docker com o comando:
+1. Adicionar os arquivos (equipe.txt, pessoa.txt e producao.txt) em apps/trabalho_final
+   
+2. Buildar e subir o docker com o comando:
 ```bash
 docker compose up -d
 ```
 
-2. Entrar no container docker com o comando:
+3. Entrar no container docker com o comando:
 ```bash
 docker compose run trabalho-final bash
 ```
 
-3. Executar o script com:
+4. Executar o script com:
 ```bash
 python3 inserir_raw_data.py
 ```
