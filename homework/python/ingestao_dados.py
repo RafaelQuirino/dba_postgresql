@@ -26,9 +26,9 @@ def processar_arquivos():
     """Função principal para processar todos os arquivos"""
     # Caminhos relativos aos arquivos
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    producao_path = os.path.join(base_dir, 'app', 'producao.txt')
-    pessoa_path = os.path.join(base_dir, 'app', 'pessoa.txt')
-    equipe_path = os.path.join(base_dir, 'app', 'equipe.txt')
+    producao_path = os.path.join(base_dir, 'homework', 'data', 'producao.txt')
+    pessoa_path = os.path.join(base_dir, 'homework', 'data', 'pessoa.txt')
+    equipe_path = os.path.join(base_dir, 'homework', 'data', 'equipe.txt')
     
     # Processa cada arquivo
     processar_producoes(producao_path)
