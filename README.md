@@ -34,7 +34,7 @@ homework/
 
 # Guia rápido — Como rodar o projeto
 
-> Requisitos: Git, Docker e Docker Compose instalados.
+> Requisitos: Git, Docker, Python 3.11 instalados.
 
 ## 1) Clonar o repositório
 ```bash
