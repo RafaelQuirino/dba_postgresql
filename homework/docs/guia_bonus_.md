@@ -1,11 +1,11 @@
 
-# 📘 Guia de Funcionalidades Bônus
+# Guia de Funcionalidades Bônus
 
 Este documento descreve as funcionalidades bônus implementadas no projeto de Banco de Dados PostgreSQL para a empresa fictícia **CineTech Studios**.
 
 ---
 
-## ✅ Implementar Testes Automatizados para o Banco de Dados
+## Implementar Testes Automatizados para o Banco de Dados
 
 Foram criados scripts de **validação automática de dados** que verificam:
 - Valores nulos em campos obrigatórios
@@ -23,7 +23,7 @@ python3 homework/python/validador_dados.py
 
 ---
 
-## 📊 Criar um Dashboard de Monitoramento
+## Criar um Dashboard de Monitoramento
 
 Foi criado um **dashboard interativo** (exemplo com Power BI / Metabase) conectado ao banco PostgreSQL para monitorar:
 - Quantidade de registros por tabela
@@ -35,7 +35,7 @@ O dashboard pode ser alimentado com consultas SQL diretas ou via exportação pa
 
 ---
 
-## 🔍 Implementar Procedimentos de Validação de Dados
+## Implementar Procedimentos de Validação de Dados
 
 Procedimentos de validação aplicados diretamente no banco de dados:
 - **Triggers** para evitar inserção de valores nulos em campos obrigatórios
@@ -50,7 +50,7 @@ ADD CONSTRAINT titulo_nao_nulo CHECK (titulo IS NOT NULL);
 
 ---
 
-## 🗄️ Adicionar Estratégias de Arquivamento de Dados
+## Adicionar Estratégias de Arquivamento de Dados
 
 Foi criada a tabela `archive_data.equipe` para armazenar dados antigos ou inativos.
 
@@ -71,7 +71,7 @@ WHERE data_fim < CURRENT_DATE - INTERVAL '2 years';
 
 ---
 
-## 🛡️ Criar um Plano de Recuperação de Desastres
+## Criar um Plano de Recuperação de Desastres
 
 O **DRP** (Disaster Recovery Plan) define como realizar backups e restaurações do banco.
 
@@ -84,7 +84,7 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 FILENAME="backup_${TIMESTAMP}.sql"
 mkdir -p $BACKUP_DIR
 PGPASSWORD=postgres pg_dump -h localhost -U postgres -d dba_postgres -n public -n archive_data -F p -f "${BACKUP_DIR}/${FILENAME}"
-echo "✅ Backup concluído: ${FILENAME}"
+echo "Backup concluído: ${FILENAME}"
 ```
 
 ### Restauração
@@ -93,17 +93,15 @@ Script `restore.sh` para restaurar um backup existente:
 #!/bin/bash
 BACKUP_FILE="/backups/backup_YYYYMMDD_HHMMSS.sql"
 PGPASSWORD=postgres psql -h localhost -U postgres -d dba_postgres -f "$BACKUP_FILE"
-echo "♻️ Restauração concluída!"
+echo "Restauração concluída!"
 ```
 
 ---
 
-## 📄 Observações Finais
+## Observações Finais
 - Os arquivos `.json` com inconsistências ficam no diretório `homework/python/output/`.
 - O dashboard pode ser integrado a ferramentas como **Metabase, Power BI ou Grafana**.
 - Os scripts de backup e restauração podem ser agendados via `cron`.
 
 ---
 
-✍️ **Autor:** Willgnner Ferreira Santos  
-📅 **Última atualização:** 07/08/2025

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Descrever a estrutura lógica do banco de dados `cinetech`, seus esquemas, tabelas, chaves e estratégias de indexação, conforme exigido no trabalho prático de DBA.
+Descrever a estrutura lógica do banco de dados `cinetech`, seus esquemas, tabelas, chaves e estratégias de indexação, conforme solicitado no trabalho prático de DBA.
 
 ---
 
@@ -12,7 +12,7 @@ Descrever a estrutura lógica do banco de dados `cinetech`, seus esquemas, tabel
 
 Contém os dados brutos ingeridos a partir dos arquivos `producao.txt`, `pessoa.txt` e `equipe.txt`.
 
-#### 🔹 Tabelas
+#### Tabelas
 
 - **producao(id_producao, titulo, ano, tipo_id, quantidade)**
   - PK: `id_producao`
@@ -34,7 +34,7 @@ Contém os dados brutos ingeridos a partir dos arquivos `producao.txt`, `pessoa.
 
 Contém tabelas derivadas segmentadas por tipo de produção, otimizadas para análise.
 
-#### 🔹 Tabelas segmentadas
+#### Tabelas segmentadas
 
 - **movies**: tipo_id = 1
 - **tv_shows**: tipo_id = 2
@@ -45,7 +45,7 @@ Contém tabelas derivadas segmentadas por tipo de produção, otimizadas para an
 - **animations**: tipo_id = 7
 - **web_series**, **theater_productions**: placeholders (sem dados)
 
-#### 🔹 Views Analíticas
+#### Views Analíticas
 
 - **production_summary**
 - **top_actors_by_type**

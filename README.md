@@ -1,33 +1,97 @@
-# 🎬 CineTech Studios - Projeto de Banco de Dados (Trabalho Prático DBA)
+# CineTech Studios - Projeto de Banco de Dados (Trabalho Final DBA)
 
 Este repositório contém a implementação completa do projeto prático de Administração de Banco de Dados (DBA), no qual gerenciamos os dados da empresa fictícia CineTech Studios.
 
 ---
 
-## 📂 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```bash
 homework/
 ├── sql/
-│   ├── 01_criacao_banco.sql
-│   ├── 02_projeto_esquema.sql
-│   ├── 03_ingestao_dados.sql (feito em Python)
-│   ├── 04_gerenciamento_usuarios.sql
-│   ├── 05_views_analytics.sql
-│   └── 06_consultas_analise.sql
+│   ├── 01_criacao_banco.sql
+│   ├── 02_projeto_esquema.sql
+│   ├── 03_ingestao_dados.sql (feito em Python e SQL para teste)
+│   ├── 04_gerenciamento_usuarios.sql
+│   ├── 05_views_analytics.sql
+│   ├── 06_consultas_analise.sql
+│   ├── 07_bonus_validador_de_dados.sql
+│   ├── 08_bonus_testes_automatizados.sql
+│   ├── 09_bonus_dashboard de monitoramento.sql
+│   └── 10_bonus_arquivamento de dados.sql
 ├── python/
-│   └── ingestao_dados.py
+│   └── ingestao_dados.py
 ├── docs/
-│   ├── documentacao_esquema.md
-│   ├── guia_acesso_usuarios.md
-│   ├── analise_performance.md
-│   └── guia_backup_recuperacao.md
-└── README.md  <-- (este arquivo)
+│   ├── analise_performance.md
+│   ├── documentacao_esquema.md
+│   ├── guia_acesso_usuarios.md
+│   ├── guia_backup_recuperacao.md
+│   └── guia_bonus_.md  
+└── README.md
 ```
 
 ---
 
-## 🧱 Documentação do Esquema do Banco de Dados
+# Guia rápido — Como rodar o projeto
+
+> Requisitos: Git, Docker e Docker Compose instalados.
+
+## 1) Clonar o repositório
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd <PASTA_DO_REPOSITORIO>
+```
+
+## 2) Subir os serviços
+```bash
+docker compose up -d
+```
+
+## 3) Acessar o PostgreSQL (psql no container)
+> Acesso direto ao **PostgreSQL** via `psql` dentro do container.
+
+```bash
+docker exec -it postgresql bash
+psql -U postgres
+```
+
+Criar o banco (e listar para conferir):
+```sql
+CREATE DATABASE cinetech_productions;
+\l  -- opcional: lista os bancos
+```
+
+Apagar o banco (se precisar):
+```sql
+DROP DATABASE cinetech_productions;
+```
+
+## 4) Inserir dados
+Execute a rotina de ingestão no container `ingestao`:
+
+```bash
+docker exec -it ingestao bash
+
+cd /app
+ls
+
+python ingestao_dados.py
+```
+
+> O script `ingestao_dados.py` insere os dados no banco de dados. Ao terminar, você pode fazer consultas no **pgAdmin** (se houver serviço no compose) ou diretamente via `psql`.
+
+## 5) Comandos Docker úteis (recriar serviços)
+Caso precise recriar os containers/volumes:
+
+```bash
+docker compose down --volumes --remove-orphans
+docker compose build
+docker compose up -d
+```
+
+---
+
+## Documentação do Esquema do Banco de Dados
 
 - Dois schemas foram criados:
   - `raw_data`: estrutura bruta com dados de produções, pessoas e equipes.
@@ -45,7 +109,7 @@ homework/
 
 ---
 
-## 👥 Documentação de Acesso de Usuários
+## Documentação de Acesso de Usuários
 
 - 6 usuários criados com níveis distintos de acesso:
   - `analyst_movies`, `analyst_tv`, `analyst_games`, `analyst_docs`: acesso somente leitura por tipo.
@@ -56,7 +120,7 @@ homework/
 
 ---
 
-## 🔄 Documentação de Ingestão de Dados
+## Documentação de Ingestão de Dados
 
 - Script de ingestão implementado em `python/ingestao_dados.py`:
   - Lê arquivos `.parquet`
@@ -71,7 +135,7 @@ homework/
 
 ---
 
-## 🚀 Documentação de Desempenho
+## Documentação de Desempenho
 
 - `EXPLAIN ANALYZE` utilizado para validar performance das consultas analíticas
 - PostgreSQL aplicou paralelismo (`Parallel Seq Scan`, `HashAggregate`, etc.)
@@ -81,7 +145,7 @@ homework/
 
 ---
 
-## 🛡️ Backup e Recuperação
+## Backup e Recuperação
 
 - Comando de backup com `pg_dump`:
 ```bash
@@ -97,9 +161,9 @@ pg_restore -U postgres -d cinetech_restaurado -C backup_cinetech.dump
 
 ---
 
-## 🏁 Status
+## Status
 
-✅ Todas as fases do projeto foram executadas com sucesso:
+Todas as fases do projeto foram executadas:
 - Criação de banco e esquemas
 - Ingestão massiva de dados
 - Controle de acesso seguro
@@ -109,7 +173,7 @@ pg_restore -U postgres -d cinetech_restaurado -C backup_cinetech.dump
 
 ---
 
-## ✨ Bônus e boas práticas aplicadas
+## Bônus e boas práticas aplicadas
 
 - Indexação estratégica
 - Estrutura modular do projeto
@@ -118,10 +182,7 @@ pg_restore -U postgres -d cinetech_restaurado -C backup_cinetech.dump
 
 ---
 
-**Feito com dedicação para a disciplina de Administração de Banco de Dados (DBA)** 🎓
----
-
-## 🧾 Conversão de Arquivos TXT para Parquet
+## Conversão de Arquivos TXT para Parquet
 
 Antes da ingestão no banco de dados, os arquivos originais `equipe.txt`, `pessoa.txt` e `producao.txt` foram convertidos para o formato `.parquet`, garantindo melhor desempenho e compatibilidade com a leitura em batch via pandas.
 
@@ -142,17 +203,17 @@ Além disso, foi realizada uma análise exploratória dos arquivos convertidos c
 
 ---
 
-## 🔐 Uso de Variáveis de Ambiente (.env)
+## Uso de Variáveis de Ambiente (.env)
 
 O projeto utiliza um arquivo `.env` para armazenar credenciais e configurações sensíveis de acesso ao banco de dados. Isso garante segurança e facilita a configuração do ambiente.
 
 Exemplo de variáveis utilizadas:
 ```
-DB_NAME=cinedb
-DB_USER=admin
-DB_PASSWORD=admin
-DB_HOST=localhost
+DB_HOST=postgresql
 DB_PORT=5432
+DB_NAME=cinetech_productions
+DB_USER=postgres
+DB_PASSWORD=postgres123
 ```
 
 As variáveis foram carregadas no script Python usando `os.getenv` para montar a `engine_url` de conexão com o PostgreSQL via SQLAlchemy.
