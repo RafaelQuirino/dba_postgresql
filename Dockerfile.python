@@ -1,6 +1,17 @@
 FROM python:3.11-slim
 
+# Define diretório de trabalho
 WORKDIR /app
-RUN pip install psycopg2-binary
-RUN pip install tqdm
 
+# Copia dependências
+COPY requirements.txt .
+
+# Instala dependências
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir pandas pyarrow fastparquet sqlalchemy psycopg2-binary tqdm
+
+# Copia o restante dos arquivos
+COPY . .
+
+# Mantém o container rodando (caso necessário para debug)
+CMD ["tail", "-f", "/dev/null"]

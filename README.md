@@ -1,2 +1,158 @@
-# dba_postgresql
-Postgresql docker compose project with sample database, for a DBA course.
+# 🎬 CineTech Studios - Projeto de Banco de Dados (Trabalho Prático DBA)
+
+Este repositório contém a implementação completa do projeto prático de Administração de Banco de Dados (DBA), no qual gerenciamos os dados da empresa fictícia CineTech Studios.
+
+---
+
+## 📂 Estrutura do Projeto
+
+```bash
+homework/
+├── sql/
+│   ├── 01_criacao_banco.sql
+│   ├── 02_projeto_esquema.sql
+│   ├── 03_ingestao_dados.sql (feito em Python)
+│   ├── 04_gerenciamento_usuarios.sql
+│   ├── 05_views_analytics.sql
+│   └── 06_consultas_analise.sql
+├── python/
+│   └── ingestao_dados.py
+├── docs/
+│   ├── documentacao_esquema.md
+│   ├── guia_acesso_usuarios.md
+│   ├── analise_performance.md
+│   └── guia_backup_recuperacao.md
+└── README.md  <-- (este arquivo)
+```
+
+---
+
+## 🧱 Documentação do Esquema do Banco de Dados
+
+- Dois schemas foram criados:
+  - `raw_data`: estrutura bruta com dados de produções, pessoas e equipes.
+  - `analytics`: estrutura segmentada por tipo de produção para facilitar análise.
+
+- Tabelas criadas com tipos apropriados, chaves primárias e estrangeiras.
+
+- Views analíticas para sumarização e insights:
+  - `production_summary`
+  - `top_actors_by_type`
+  - `yearly_production_trends`
+  - `crew_analysis`
+
+- Índices criados nas colunas `ano`, `tipo_id`, `id_pessoa`, `id_producao`, e `LOWER(papel)` para otimizar joins e filtros.
+
+---
+
+## 👥 Documentação de Acesso de Usuários
+
+- 6 usuários criados com níveis distintos de acesso:
+  - `analyst_movies`, `analyst_tv`, `analyst_games`, `analyst_docs`: acesso somente leitura por tipo.
+  - `analyst_all`: leitura total no schema `analytics`.
+  - `data_scientist`: leitura e escrita no schema `analytics`.
+
+- Permissões concedidas com `GRANT`/`REVOKE` e testadas com `SET ROLE`.
+
+---
+
+## 🔄 Documentação de Ingestão de Dados
+
+- Script de ingestão implementado em `python/ingestao_dados.py`:
+  - Lê arquivos `.parquet`
+  - Trata dados ausentes e duplicados
+  - Valida chaves estrangeiras antes de inserir
+  - Usa `to_sql(..., method="multi")` e `tqdm` para performance e feedback visual
+
+- Schema `raw_data` é populado com:
+  - `producao.parquet`
+  - `pessoa.parquet`
+  - `equipe.parquet`
+
+---
+
+## 🚀 Documentação de Desempenho
+
+- `EXPLAIN ANALYZE` utilizado para validar performance das consultas analíticas
+- PostgreSQL aplicou paralelismo (`Parallel Seq Scan`, `HashAggregate`, etc.)
+- Nenhum gargalo detectado
+- Particionamento avaliado, mas considerado desnecessário neste momento
+- Índices mantidos para garantir desempenho em análises temporais e relacionais
+
+---
+
+## 🛡️ Backup e Recuperação
+
+- Comando de backup com `pg_dump`:
+```bash
+pg_dump -U postgres -d cinetech -F c -f backup_cinetech.dump
+```
+
+- Restauração com `pg_restore`:
+```bash
+pg_restore -U postgres -d cinetech_restaurado -C backup_cinetech.dump
+```
+
+- Testes sugeridos com banco `cinetech_restore_test`
+
+---
+
+## 🏁 Status
+
+✅ Todas as fases do projeto foram executadas com sucesso:
+- Criação de banco e esquemas
+- Ingestão massiva de dados
+- Controle de acesso seguro
+- Criação de views analíticas
+- Análises de negócio e otimização
+- Backup e documentação abrangente
+
+---
+
+## ✨ Bônus e boas práticas aplicadas
+
+- Indexação estratégica
+- Estrutura modular do projeto
+- Scripts SQL organizados por etapa
+- Documentação completa em Markdown para entrega e reuso
+
+---
+
+**Feito com dedicação para a disciplina de Administração de Banco de Dados (DBA)** 🎓
+---
+
+## 🧾 Conversão de Arquivos TXT para Parquet
+
+Antes da ingestão no banco de dados, os arquivos originais `equipe.txt`, `pessoa.txt` e `producao.txt` foram convertidos para o formato `.parquet`, garantindo melhor desempenho e compatibilidade com a leitura em batch via pandas.
+
+O script de conversão executou os seguintes passos:
+
+1. Leitura dos arquivos `.txt` com separador `##` e codificação `cp1252`.
+2. Renomeação das colunas com nomes apropriados.
+3. Tratamento de erros de leitura com fallback de caracteres inválidos.
+4. Conversão para `.parquet` usando `fastparquet`, com indexação desativada.
+5. Criação de uma versão filtrada de `producao.parquet`, removendo anos inválidos (ano = 0).
+
+Além disso, foi realizada uma análise exploratória dos arquivos convertidos com verificação de:
+- Tipos de dados
+- Quantidade de registros
+- Presença de valores nulos
+- Colunas duplicadas
+- Estatísticas descritivas básicas
+
+---
+
+## 🔐 Uso de Variáveis de Ambiente (.env)
+
+O projeto utiliza um arquivo `.env` para armazenar credenciais e configurações sensíveis de acesso ao banco de dados. Isso garante segurança e facilita a configuração do ambiente.
+
+Exemplo de variáveis utilizadas:
+```
+DB_NAME=cinedb
+DB_USER=admin
+DB_PASSWORD=admin
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+As variáveis foram carregadas no script Python usando `os.getenv` para montar a `engine_url` de conexão com o PostgreSQL via SQLAlchemy.

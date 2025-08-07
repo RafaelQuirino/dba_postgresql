@@ -1,0 +1,8 @@
+pandas
+pyarrow
+fastparquet
+sqlalchemy
+psycopg2-binary
+tqdm
+python-dotenv
+SQLAlchemy
