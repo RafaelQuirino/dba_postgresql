@@ -21,6 +21,7 @@ O schema `raw_data` reúne as principais tabelas do projeto:
 | `equipe`   | Relações entre produção e equipe     |
 
 Para a ingestão dos dados, são utilizados **scripts em Python** que processam arquivos `.txt`, aplicando tratamento de erros e exibindo mensagens claras de sucesso ou falha.
+
 ---
 
 ## 3. Estrutura do Schema `analytics`
