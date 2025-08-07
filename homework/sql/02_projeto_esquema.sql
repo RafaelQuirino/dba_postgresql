@@ -21,8 +21,10 @@ CREATE TABLE equipe(
 	PRIMARY KEY(producaoID, pessoaID)	
 );
 
--- Schema para os dados brutos, as tabelas físicas.
-CREATE SCHEMA raw_data;
+-- ########################### RAW_DATA SCHEMA ###########################
+
+-- Schema raw_data, se ainda não existir
+CREATE SCHEMA IF NOT EXISTS raw_data;
 
 -- Este script move todos os objetos do 'public' para o 'raw_data'
 DO $$
@@ -46,5 +48,98 @@ END LOOP;
 END;
 $$;
 
+-- ########################### ANALYTICS SCHEMA  ###########################
 
+-- Schema analytics, se ainda não existir
+CREATE SCHEMA IF NOT EXISTS analytics;
 
+-- Tabela analytics.movies
+CREATE TABLE analytics.movies(
+  movieid SERIAL PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  ano_producao INTEGER
+);
+
+-- Insere dados na Tabela analytics.movies
+INSERT INTO analytics.movies(titulo, ano_producao)
+SELECT titulo, ano_producao
+FROM raw_data.producao
+WHERE tipo_id = 1;
+
+-- Tabela analytics.tv_shows
+CREATE TABLE analytics.tv_shows(
+  movieid SERIAL PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  ano_producao INTEGER
+);
+
+-- Insere dados na Tabela analytics.tv_shows
+INSERT INTO analytics.tv_shows(titulo, ano_producao)
+SELECT titulo, ano_producao
+FROM raw_data.producao
+WHERE tipo_id = 2;
+
+-- Tabela analytics.short_films
+CREATE TABLE analytics.short_films(
+  movieid SERIAL PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  ano_producao INTEGER
+);
+
+-- Insere dados na Tabela analytics.short_films
+INSERT INTO analytics.short_films(titulo, ano_producao)
+SELECT titulo, ano_producao
+FROM raw_data.producao
+WHERE tipo_id = 3;
+
+-- Tabela analytics.independent_films
+CREATE TABLE analytics.independent_films(
+  movieid SERIAL PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  ano_producao INTEGER
+);
+
+-- Insere dados na Tabela analytics.independent_films
+INSERT INTO analytics.independent_films(titulo, ano_producao)
+SELECT titulo, ano_producao
+FROM raw_data.producao
+WHERE tipo_id = 4;
+
+-- Tabela analytics.documentaries
+CREATE TABLE analytics.documentaries(
+  movieid SERIAL PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  ano_producao INTEGER
+);
+
+-- Insere dados na Tabela analytics.documentaries
+INSERT INTO analytics.documentaries(titulo, ano_producao)
+SELECT titulo, ano_producao
+FROM raw_data.producao
+WHERE tipo_id = 5;
+
+-- Tabela analytics.video_games
+CREATE TABLE analytics.video_games(
+  movieid SERIAL PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  ano_producao INTEGER
+);
+
+-- Insere dados na Tabela analytics.video_games
+INSERT INTO analytics.video_games(titulo, ano_producao)
+SELECT titulo, ano_producao
+FROM raw_data.producao
+WHERE tipo_id = 6;
+
+-- Tabela analytics.episodes
+CREATE TABLE analytics.episodes(
+  movieid SERIAL PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  ano_producao INTEGER
+);
+
+-- Insere dados na Tabela analytics.episodes
+INSERT INTO analytics.episodes(titulo, ano_producao)
+SELECT titulo, ano_producao
+FROM raw_data.producao
+WHERE tipo_id = 7;
