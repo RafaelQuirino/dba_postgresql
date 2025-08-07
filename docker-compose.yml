@@ -37,7 +37,7 @@ services:
       dockerfile: Dockerfile.python
     container_name: ingestao-txt
     volumes:
-      - ./apps/ingestao_txt:/app
+      - ./homework/ingestao_txt:/app
     environment:
       DB_HOST: postgresql
       DB_PORT: 5432
