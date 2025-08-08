@@ -44,4 +44,26 @@ psql -U postgres
 
 ### Passo 4: Inserção de dados
 
-Execute a rotina de ingestão no container ```text ingestao```:
+Execute a rotina de ingestão no container ```ingestao```:
+
+```bash
+docker exec -it ingestao bash
+
+cd /app
+ls
+
+python ingestao_dados.py
+```
+O script ```ingestao_dados.py``` carrega as informações no banco. Depois disso, você pode consultar os dados pelo pgAdmin (caso o serviço estiver no compose) ou diretamente pelo ```psql```.
+
+**OBS.:** Para acessar o pgAdmin basta inserir ```localhost:8080``` (geralmente) no seu navegador, caso na seja essa a porta, verificar no arquivo ```docker-compose.yml```.
+
+## Comandos Docker úteis:
+
+Caso deseje recriar os containers/volumes:
+```bash
+docker compose down --volumes --remove-orphans
+docker compose build
+docker compose up -d
+```
+
