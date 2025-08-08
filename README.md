@@ -18,5 +18,29 @@ homework/
 │   ├── documentacao_esquema.md
 │   ├── guia_acesso_usuarios.md
 └── README.md
+```
 
+## Instruções - Como executar o projeto?
+
+Requisitos: Docker, Git e Python 3.9.13 instalados.
+
+### Passo 1: Clonar o reposiório 
+
+```bash
+git clone <url_do_repositorio>
+cd <pasta_do_repositorio_clonado>
+```
+### Passo 2: Subir o docker-compose
+
+```bash
+docker compose up -d
+```
+### Passo 3: Acessar o PostgreSQL via psql
+
+```bash
+docker exec -it postgresql bash
+psql -U postgres
+```
+
+### Passo 4: Inserção de dados
 
