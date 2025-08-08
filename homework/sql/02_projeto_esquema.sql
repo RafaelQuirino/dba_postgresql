@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS equipe(
 );
 
 -- ########################### RAW_DATA SCHEMA ###########################
-
+-- Schema para os dados brutos, as tabelas físicas
 -- Schema raw_data, se ainda não existir
 CREATE SCHEMA IF NOT EXISTS raw_data;
 
@@ -49,7 +49,7 @@ END;
 $$;
 
 -- ########################### ANALYTICS SCHEMA  ###########################
-
+-- Schema para a equipe de análise de dados (BI, relatórios de performance)
 -- Schema analytics, se ainda não existir
 CREATE SCHEMA IF NOT EXISTS analytics;
 
