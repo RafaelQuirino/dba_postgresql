@@ -4,6 +4,7 @@ Neste repositório encontra-se a solução integral do Trabalho Final da discipl
 
 ## Estrutura do Projeto
 
+```text
 homework/
 ├── sql/
 │   ├── 01_criacao_banco.sql
