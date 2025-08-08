@@ -44,3 +44,4 @@ psql -U postgres
 
 ### Passo 4: Inserção de dados
 
+Execute a rotina de ingestão no container ```text ingestao```:
