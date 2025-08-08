@@ -20,11 +20,11 @@ homework/
 └── README.md
 ```
 
-## Instruções - Como executar o projeto?
+## Instruções - Como Executar o Projeto?
 
 Requisitos: Docker, Git e Python 3.9.13 instalados.
 
-### Passo 1: Clonar o reposiório 
+### Passo 1: Clonar o Reposiório 
 
 ```bash
 git clone <url_do_repositorio>
@@ -58,7 +58,7 @@ O script ```ingestao_dados.py``` carrega as informações no banco. Depois disso
 
 **OBS.:** Para acessar o pgAdmin basta inserir ```localhost:8080``` (geralmente) no seu navegador, caso na seja essa a porta, verificar no arquivo ```docker-compose.yml```.
 
-## Comandos Docker úteis:
+## Comandos Docker Úteis:
 
 Caso deseje recriar os containers/volumes:
 ```bash
@@ -96,4 +96,20 @@ docker compose up -d
 | 6       | Videogames       | “Cold Fear”, “Counter Strike”, “Before Crisis: Final Fantasy VII”, “Cruis’n Exotica”                                     |
 | 7       | Episódios        | “Jobs for the Girls”, “The Box of Chocolates”, “Act 8” (sugere animações curtas)                                        |
 
+## Acesso de Usuários:
 
+- Foram criados 6 usuários com níveis de acesso distintos:
+
+    - ```analyst_movies```, ```analyst_tv```, ```analyst_games```, ```analyst_docs```: acesso somente leitura por tipo.
+    - ```analyst_all```: leitura total no schema analytics.
+    - ```data_scientist```: leitura e escrita no schema analytics.
+
+- Permissões concedidas com ```GRANT/REVOKE``` e testadas com ```SET ROLE```.
+
+## Ingestão de Dados:
+
+## Uso de Variáveis de Ambiente (.env):
+
+O projeto utiliza um arquivo ```.env``` para armazenar credenciais e configurações sensíveis de acesso ao banco de dados. Isso garante segurança e facilita a configuração do ambiente.
+
+Exemplo de variáveis utilizadas:
