@@ -1,5 +1,5 @@
 -- Tabela Produção
-CREATE TABLE producao(
+CREATE TABLE IF NOT EXISTS producao(
 	producaoID INT PRIMARY KEY,
 	titulo VARCHAR(255) NOT NULL,
 	ano_producao INT NOT NULL,
@@ -7,13 +7,13 @@ CREATE TABLE producao(
 );
 
 -- Tabela Pessoa
-CREATE TABLE pessoa(
+CREATE TABLE IF NOT EXISTS pessoa(
 	pessoaID INT PRIMARY KEY,
 	nome VARCHAR(255) NOT NULL
 );
 
 -- Tabela Equipe
-CREATE TABLE equipe(
+CREATE TABLE IF NOT EXISTS equipe(
 	producaoID INTEGER NOT NULL REFERENCES producao(producaoID) ON DELETE CASCADE,
     pessoaID INTEGER NOT NULL REFERENCES pessoa(pessoaID) ON DELETE CASCADE,
 	papel TEXT,
@@ -54,7 +54,7 @@ $$;
 CREATE SCHEMA IF NOT EXISTS analytics;
 
 -- Tabela analytics.movies
-CREATE TABLE analytics.movies(
+CREATE TABLE IF NOT EXISTS analytics.movies(
   movieid SERIAL PRIMARY KEY,
   titulo VARCHAR(255) NOT NULL,
   ano_producao INTEGER
@@ -67,7 +67,7 @@ FROM raw_data.producao
 WHERE tipo_id = 1;
 
 -- Tabela analytics.tv_shows
-CREATE TABLE analytics.tv_shows(
+CREATE TABLE IF NOT EXISTS analytics.tv_shows(
   movieid SERIAL PRIMARY KEY,
   titulo VARCHAR(255) NOT NULL,
   ano_producao INTEGER
@@ -80,7 +80,7 @@ FROM raw_data.producao
 WHERE tipo_id = 2;
 
 -- Tabela analytics.short_films
-CREATE TABLE analytics.short_films(
+CREATE TABLE IF NOT EXISTS analytics.short_films(
   movieid SERIAL PRIMARY KEY,
   titulo VARCHAR(255) NOT NULL,
   ano_producao INTEGER
@@ -93,7 +93,7 @@ FROM raw_data.producao
 WHERE tipo_id = 3;
 
 -- Tabela analytics.independent_films
-CREATE TABLE analytics.independent_films(
+CREATE TABLE IF NOT EXISTS analytics.independent_films(
   movieid SERIAL PRIMARY KEY,
   titulo VARCHAR(255) NOT NULL,
   ano_producao INTEGER
@@ -106,7 +106,7 @@ FROM raw_data.producao
 WHERE tipo_id = 4;
 
 -- Tabela analytics.documentaries
-CREATE TABLE analytics.documentaries(
+CREATE TABLE IF NOT EXISTS analytics.documentaries(
   movieid SERIAL PRIMARY KEY,
   titulo VARCHAR(255) NOT NULL,
   ano_producao INTEGER
@@ -119,7 +119,7 @@ FROM raw_data.producao
 WHERE tipo_id = 5;
 
 -- Tabela analytics.video_games
-CREATE TABLE analytics.video_games(
+CREATE TABLE IF NOT EXISTS analytics.video_games(
   movieid SERIAL PRIMARY KEY,
   titulo VARCHAR(255) NOT NULL,
   ano_producao INTEGER
@@ -132,7 +132,7 @@ FROM raw_data.producao
 WHERE tipo_id = 6;
 
 -- Tabela analytics.episodes
-CREATE TABLE analytics.episodes(
+CREATE TABLE IF NOT EXISTS analytics.episodes(
   movieid SERIAL PRIMARY KEY,
   titulo VARCHAR(255) NOT NULL,
   ano_producao INTEGER
@@ -143,3 +143,14 @@ INSERT INTO analytics.episodes(titulo, ano_producao)
 SELECT titulo, ano_producao
 FROM raw_data.producao
 WHERE tipo_id = 7;
+
+-- Índices para acelerar análises por ano
+CREATE INDEX IF NOT EXISTS idx_movies_ano ON analytics.movies(ano_producao);
+CREATE INDEX IF NOT EXISTS idx_tv_shows_ano ON analytics.tv_shows(ano_producao);
+CREATE INDEX IF NOT EXISTS idx_short_films_ano ON analytics.short_films(ano_producao);
+CREATE INDEX IF NOT EXISTS idx_independent_films_ano ON analytics.independent_films(ano_producao);
+CREATE INDEX IF NOT EXISTS idx_documentaries_ano ON analytics.documentaries(ano_producao);
+CREATE INDEX IF NOT EXISTS idx_video_games_ano ON analytics.video_games(ano_producao);
+CREATE INDEX IF NOT EXISTS idx_episodes_ano ON analytics.episodes(ano_producao);
+
+
