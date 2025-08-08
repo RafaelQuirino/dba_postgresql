@@ -66,4 +66,16 @@ docker compose down --volumes --remove-orphans
 docker compose build
 docker compose up -d
 ```
+## Mapeamento do Esquema Analítico:
+
+| tipo_id | Categoria        | Justificativa (exemplos de títulos)                                                                                      |
+|--------:|------------------|--------------------------------------------------------------------------------------------------------------------------|
+| 1       | Filmes           | “Campanile d’oro”, “Cultural Menace”, “Clinic, The”, “Black Spot, The”                                                   |
+| 2       | Séries de TV     | “Star Trek: Deep Space Nine”, “Adventure Inc.”, “Calle en que vivimos, La”                                              |
+| 3       | Curtas-metragens   | “Überfall in Glasgow”, “Überstunde”, “Über ganz Spanien wolkenloser Himmel”                                             |
+| 4       | Filme independente | “Sports Illustrated Swimsuit”, “Paris Chic”, “Talk Dirty to Me, Part III”                                               |
+| 5       | Documentários | “Zodiak”, “XV FIFA World Cup”, “Zeiten ändern sich”, “Winning Streak, The”                                              |
+| 6       | Videogames       | “Cold Fear”, “Counter Strike”, “Before Crisis: Final Fantasy VII”, “Cruis’n Exotica”                                     |
+| 7       | Episódios        | “Jobs for the Girls”, “The Box of Chocolates”, “Act 8” (sugere animações curtas)                                        |
+
 
