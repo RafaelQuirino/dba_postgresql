@@ -46,38 +46,6 @@ services:
       DB_PASSWORD: postgres123
     depends_on: 
       - postgresql
-      
-  pubs-txt:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-    container_name: pubs-txt
-    volumes:
-      - ./apps/pubs_txt:/app
-    environment:
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_NAME: pubs_txt_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-    depends_on: 
-      - postgresql
-
-  pubs-json:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-    container_name: pubs-json
-    volumes:
-      - ./apps/pubs_json:/app
-    environment:
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_NAME: pubs_json_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-    depends_on:
-      - postgresql
 
 volumes:
   pg_data:
