@@ -1,68 +1,98 @@
 
-# Backup e Recuperação no PostgreSQL
+# Backup, Restauração e Teste de Banco PostgreSQL com Docker
 
-## Objetivo
-
-Garantir a segurança e a persistência dos dados do banco `cinetech`, permitindo a criação de cópias de segurança (backups) e a restauração do banco em caso de falhas.
-
----
-
-## Comandos para Backup com `pg_dump`
-
-### Backup completo do banco de dados `cinetech`
-
-```bash
-pg_dump -U postgres -F c -b -v -f backup_cinetech.dump cinetech
-```
-
-- `-U postgres`: Usuário do banco.
-- `-F c`: Formato custom (compactado).
-- `-b`: Inclui blobs.
-- `-v`: Modo verboso.
-- `-f`: Nome do arquivo de saída.
-- `cinetech`: Nome do banco de dados.
+Este guia documenta o procedimento utilizado para criar um backup do banco `cinetech_productions`,
+restaurá-lo em um banco de teste (`cinetech_restore_test`) e validar a integridade dos dados,
+utilizando PostgreSQL rodando em um container Docker.
 
 ---
 
-### Backup apenas do schema `analytics`
+## 1. Gerar Backup Dentro do Container
+
+Acesse o container e gere o arquivo `.dump` com o comando `pg_dump`:
 
 ```bash
-pg_dump -U postgres -n analytics -F c -f backup_analytics.dump cinetech
+docker exec -it postgresql bash -c "pg_dump -U postgres -F c -b -v -f /tmp/backup_cinetech.dump cinetech_productions"
 ```
 
-- `-n analytics`: Especifica o schema a ser exportado.
-
----
-
-## Comando para Restauração com `pg_restore`
-
-### Restaurar o dump completo
+Verifique se o arquivo foi criado e possui tamanho maior que zero:
 
 ```bash
-pg_restore -U postgres -d cinetech -v backup_cinetech.dump
-```
-
-- `-d cinetech`: Banco de dados onde será feita a restauração.
-
----
-
-## Testando a Restauração (boa prática)
-
-1. Criar um banco de testes:
-```bash
-createdb cinetech_restore_test
-```
-
-2. Restaurar no banco de testes:
-```bash
-pg_restore -U postgres -d cinetech_restore_test -v backup_cinetech.dump
+docker exec -it postgresql ls -lh /tmp/backup_cinetech.dump
 ```
 
 ---
 
-## Considerações
+## 2. Criar Banco de Teste e Restaurar
 
-- O comando `pg_dump` não bloqueia a leitura, e pode ser executado em produção.
-- É recomendado agendar backups regulares via `cron` no Linux ou Agendador de Tarefas no Windows.
-- Mantenha os arquivos de dump fora do servidor do banco, em storage seguro.
+Primeiro, garanta que o banco de teste não exista e crie-o novamente:
 
+```bash
+docker exec -it postgresql dropdb -U postgres --if-exists cinetech_restore_test
+docker exec -it postgresql createdb -U postgres cinetech_restore_test
+```
+
+Em seguida, restaure o backup para o banco de teste:
+
+```bash
+docker exec -it postgresql pg_restore -U postgres -d cinetech_restore_test --clean --if-exists -v /tmp/backup_cinetech.dump
+```
+
+---
+
+## 3. Validar Estrutura
+
+Liste os schemas presentes no banco de teste:
+
+```bash
+docker exec -it postgresql psql -U postgres -d cinetech_restore_test -c "\dn"
+```
+
+Liste as tabelas de um schema específico (exemplo: `raw_data`):
+
+```bash
+docker exec -it postgresql psql -U postgres -d cinetech_restore_test -c "\dt raw_data.*"
+```
+
+---
+
+## 4. Validar Dados
+
+Para verificar a quantidade de registros em uma tabela específica:
+
+```bash
+docker exec -it postgresql psql -U postgres -d cinetech_restore_test -c "SELECT COUNT(*) FROM raw_data.producao;"
+```
+
+Saída esperada (exemplo):
+
+```
+ count
+---------
+ 8450867
+(1 row)
+```
+
+---
+
+## 5. Copiar Backup Para o Host (Opcional)
+
+Caso queira salvar o backup no computador host:
+
+```bash
+docker cp postgresql:/tmp/backup_cinetech.dump .
+```
+
+O arquivo será copiado para o diretório atual.
+
+---
+
+## Observações
+
+- `cinetech_productions` é o nome do banco original.
+- `cinetech_restore_test` é o banco de testes usado para validar a restauração.
+- O backup foi feito no formato **custom** (`-F c`), que é compactado e compatível com `pg_restore`.
+- Sempre valide tanto a estrutura (schemas e tabelas) quanto o conteúdo (quantidade de registros).
+- Mantenha backups em local seguro fora do servidor.
+
+---
