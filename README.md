@@ -1,6 +1,6 @@
 # Trabalho Prático: Banco de Dados de Produções Artísticas
 
-Neste repositório encontra-se a solução integral do Trabalho Final da disciplina de Administração de Bancos de Dados (DBA), dedicada ao gerenciamento dos dados da empresa fictícia CineTech Studios.
+Neste repositório encontra-se a solução do Trabalho Final da disciplina de Administração de Bancos de Dados (DBA), dedicada ao gerenciamento dos dados da empresa fictícia CineTech Studios.
 
 ## Estrutura do Projeto
 
