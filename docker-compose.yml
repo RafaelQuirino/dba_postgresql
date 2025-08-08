@@ -63,6 +63,22 @@ services:
     depends_on:
       - postgresql
 
+  homework:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: homework
+    volumes:
+      - ./apps/homework:/app
+    environment:
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_NAME: cinetech_productions
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+    depends_on:
+      - postgresql
+
 volumes:
   pg_data:
   pgadmin_data:
