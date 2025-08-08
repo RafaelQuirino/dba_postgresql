@@ -113,3 +113,10 @@ docker compose up -d
 O projeto utiliza um arquivo ```.env``` para armazenar credenciais e configurações sensíveis de acesso ao banco de dados. Isso garante segurança e facilita a configuração do ambiente.
 
 Exemplo de variáveis utilizadas:
+```bash
+DB_HOST=postgresql
+DB_PORT=5432
+DB_NAME=cinetech_productions
+DB_USER=postgres
+DB_PASSWORD=postgres123
+```
