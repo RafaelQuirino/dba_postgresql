@@ -90,8 +90,21 @@ docker compose up -d
 ```
 
 ---
+## Mapeamento dos IDs da tabela
 
-## Documentação do Esquema do Banco de Dados
+```bash
+| tipo_id | Categoria         | Justificativa (exemplos de títulos) |
+|---------|-------------------|--------------------------------------|
+| 1       | Filmes            | “Campanile d’oro”, “Cultural Menace”, “Clinic, The”, “Black Spot, The” |
+| 2       | Séries de TV      | “Star Trek: Deep Space Nine”, “Adventure Inc.”, “Calle en que vivimos, La” |
+| 3       | Documentários     | “Überfall in Glasgow”, “Überstunde”, “Über ganz Spanien wolkenloser Himmel” |
+| 4       | Curtas-metragens  | “Sports Illustrated Swimsuit”, “Paris Chic”, “Talk Dirty to Me, Part III” |
+| 5       | Clipes de Música  | “Zodiak”, “XV FIFA World Cup”, “Zeiten ändern sich”, “Winning Streak, The” |
+| 6       | Videogames        | “Cold Fear”, “Counter Strike”, “Before Crisis: Final Fantasy VII”, “Cruis’n Exotica” |
+| 7       | Animações         | “Jobs for the Girls”, “The Box of Chocolates”, “Act 8” (sugere animações curtas) |
+```
+
+## Esquema do Banco de Dados
 
 - Dois schemas foram criados:
   - `raw_data`: estrutura bruta com dados de produções, pessoas e equipes.
@@ -109,7 +122,7 @@ docker compose up -d
 
 ---
 
-## Documentação de Acesso de Usuários
+## Acesso de Usuários
 
 - 6 usuários criados com níveis distintos de acesso:
   - `analyst_movies`, `analyst_tv`, `analyst_games`, `analyst_docs`: acesso somente leitura por tipo.
@@ -120,7 +133,7 @@ docker compose up -d
 
 ---
 
-## Documentação de Ingestão de Dados
+## Ingestão de Dados
 
 - Script de ingestão implementado em `python/ingestao_dados.py`:
   - Lê arquivos `.parquet`
@@ -135,7 +148,7 @@ docker compose up -d
 
 ---
 
-## Documentação de Desempenho
+## Desempenho
 
 - `EXPLAIN ANALYZE` utilizado para validar performance das consultas analíticas
 - PostgreSQL aplicou paralelismo (`Parallel Seq Scan`, `HashAggregate`, etc.)
@@ -177,8 +190,9 @@ Em seguida, restaure o backup para o banco de teste:
 ```bash
 docker exec -it postgresql pg_restore -U postgres -d cinetech_restore_test --clean --if-exists -v /tmp/backup_cinetech.dump
 ```
-
 ---
+Mais detalhes em:
+- (https://github.com/RafaelQuirino/dba_postgresql/blob/homework/Willgnner-Santos/homework/docs/guia_backup_recuperacao.md)
 
 ## Status
 
