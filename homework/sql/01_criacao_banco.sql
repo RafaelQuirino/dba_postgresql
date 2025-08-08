@@ -38,4 +38,10 @@ CREATE TABLE raw_data.equipe (
     FOREIGN KEY (producaoID) REFERENCES raw_data.producao(producaoID)
 );
 
+-- Índices para performance
+CREATE INDEX idx_nome_pessoa ON raw_data.pessoa (nome); -- indice para nome
+CREATE INDEX idx_equipe_producao ON raw_data.equipe(producaoID); -- indice para buscar equipe pela producaoID
+CREATE INDEX idx_equipe_papel_producao ON raw_data.equipe(papel, producaoID); -- indice para buscar equipe por papel e producao
+CREATE INDEX idx_producao_ano ON raw_data.producao(ano_producao); -- indice para buscar ano de producao
+CREATE INDEX idx_producao_tipo_ano ON raw_data.producao(tipo_ID, ano_producao); -- indice para buscar tipo e ano de producao
 
