@@ -1,116 +1,82 @@
+version: "3.9"
+
 services:
+  # 1. Serviço do Banco de Dados
   postgresql:
-    image: postgres:17
+    image: postgres:14
     container_name: postgresql
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: cinetech_productions # Importante: crie o banco aqui
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cinetech_productions"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  # --- SERVIÇO DE INICIALIZAÇÃO PARA PUBS_TXT ---
-  init-pubs-txt:
+  # 2. Serviço de Migração (usa o Dockerfile.python)
+  db-migrator:
     build:
       context: .
-      dockerfile: Dockerfile.python
-    command: >
-      sh -c "./wait-for-it.sh postgresql flask init-db"
-    environment:
-      # Variáveis para a conexão e para o comando flask
-      FLASK_APP: "run.py" # ou o nome do seu arquivo principal do Flask
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_NAME: pubs_txt_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-      DB_SCHEMA: "raw_data" # Defina o schema aqui
+      dockerfile: Dockerfile.python # <--- Usa o Dockerfile do Python
+    container_name: db-migrator
     depends_on:
       postgresql:
-        condition: service_healthy # Espera o banco ficar saudável
+        condition: service_healthy # Espera o DB estar pronto
+    environment:
+      # Variáveis para o script de migração
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+    command: ["sh", "-c", "flask init-db --yes"]
 
-  # --- SERVIÇO DE INICIALIZAÇÃO PARA PUBS_JSON ---
-  init-pubs-json:
+  # 3. Sua Aplicação Principal (também usa o Dockerfile.python)
+  app:
     build:
       context: .
-      dockerfile: Dockerfile.python
-    command: >
-      sh -c "./wait-for-it.sh postgresql flask init-db"
-    environment:
-      FLASK_APP: "run.py" 
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_NAME: pubs_json_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-      DB_SCHEMA: "json_data" # Um schema diferente, por exemplo
+      dockerfile: Dockerfile.python # <--- Usa o mesmo Dockerfile do Python
+    container_name: app-flask # Um nome claro para sua aplicação
+    restart: always
     depends_on:
-      postgresql:
-        condition: service_healthy
+      db-migrator:
+        # Só inicia DEPOIS que a migração terminou com sucesso
+        condition: service_completed_successfully
+    environment:
+      # Variáveis para a aplicação
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+    ports:
+      # Exemplo: Porta 8000 do seu PC para a porta 5000 do contêiner
+      - "8000:5000"
+    command: ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 'apps.main:create_app()'"]
 
+  # 4. Interface Web do pgAdmin (usa o Dockerfile.pgadmin)
   pgadmin:
     build:
       context: .
-      dockerfile: Dockerfile.pgadmin
-    container_name: pgadmin
+      dockerfile: Dockerfile.pgadmin # <--- Usa o Dockerfile do pgAdmin
+    container_name: pgadmin-ui # Nome claro para a interface
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin123
+      # Esta variável evita que o pgAdmin peça a senha mestre na primeira vez
+      PGADMIN_SETUP_EMAIL: admin@admin.com
+      PGADMIN_SETUP_PASSWORD: admin123
     volumes:
-      - ./conf/pgadmin_pass:/pgadmin4/pass
+      # O arquivo de servidores é montado para autoconfigurar a conexão
       - ./conf/pgadmin_servers.json:/pgadmin4/servers.json
       - pgadmin_data:/var/lib/pgadmin
     ports:
-      - 8080:80
+      # Porta 8080 do seu PC para a porta 80 do contêiner
+      - "8080:80"
     depends_on:
-      postgresql:
-        condition: service_healthy
-
-  pubs-txt:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-    container_name: pubs-txt
-    command: ["flask", "run", "--host=0.0.0.0"] # Comando para rodar a aplicação
-    volumes:
-      - ./apps/pubs_txt:/app
-    environment:
-      FLASK_APP: "run.py" 
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_NAME: pubs_txt_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-      DB_SCHEMA: "raw_data"
-    depends_on:
-      init-pubs-txt: # Espera o serviço de init terminar
-        condition: service_completed_successfully
-
-  pubs-json:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-    container_name: pubs-json
-    command: ["flask", "run", "--host=0.0.0.0"] # Comando para rodar a aplicação
-    volumes:
-      - ./apps/pubs_json:/app
-    environment:
-      FLASK_APP: "run.py"
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_NAME: pubs_json_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-      DB_SCHEMA: "json_data"
-    depends_on:
-      init-pubs-json: # Espera o serviço de init terminar
+      db-migrator:
+        # Também espera a migração para garantir que o banco esteja pronto para ser explorado
         condition: service_completed_successfully
 
 volumes:

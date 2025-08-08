@@ -1,20 +1,17 @@
 # Use a imagem base do Python
 FROM python:3.11-slim
 
-# --- ADICIONE ESTAS LINHAS PARA INSTALAR O CLIENTE POSTGRES ---
-# Instala psql, que é necessário para o script wait-for-it.sh
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
-# -------------------------------------------------------------
-
-# Define o diretório de trabalho
+# 1. Configuração base (não muda com frequência)
 WORKDIR /app
+ENV PYTHONPATH /app
 
-# Copia os arquivos de dependências
+# 2. Instalação de dependências (só muda quando requirements.txt muda)
+# Copia SÓ o arquivo de dependências primeiro
 COPY requirements.txt .
-
-# Instala as dependências
+# Instala as dependências. Esta camada ficará em cache na maioria das vezes.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia o script de espera e dá permissão de execução
-COPY wait-for-it.sh .
-RUN chmod +x wait-for-it.sh
+# 3. Cópia do restante do projeto (muda com frequência)
+# Copia todo o resto, incluindo o código da app e a pasta de dados.
+# O comando "COPY . ." já inclui a pasta "data/", então a linha separada não é necessária.
+COPY . .

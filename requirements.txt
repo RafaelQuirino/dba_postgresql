@@ -1,5 +1,6 @@
+Flask
+Flask-SQLAlchemy
 psycopg2-binary
+click
+gunicorn
 tqdm
-flask_sqlalchemy
-sqlalchemy
-flask
