@@ -16,8 +16,8 @@ SELECT
     pe.nome,
     COUNT(*) AS participacoes
 FROM raw_data.equipe e
-JOIN raw_data.pessoa ps ON pe.id_pessoa = e.id_pessoa
-JOIN raw_data.producao pd ON p.id_producao = e.id_producao
+JOIN raw_data.pessoa ps ON pe.pessoaID = e.pessoaID
+JOIN raw_data.producao pd ON p.producaoID = e.producaoID
 GROUP BY p.tipo_id, pe.nome
 HAVING COUNT(*) >= 10  -- ajustável
 ORDER BY p.tipo_id, participacoes DESC;
