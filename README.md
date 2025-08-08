@@ -66,6 +66,24 @@ docker compose down --volumes --remove-orphans
 docker compose build
 docker compose up -d
 ```
+## Esquema do Banco de Dados:
+
+- Foram criados dois schemas:
+
+    - ```raw_data```: estrutura bruta com dados de produções, pessoas e equipes.
+    - ```analytics```: estrutura segmentada por tipo de produção para facilitar análise.
+
+- Tabelas criadas com tipos apropriados, chaves primárias e estrangeiras.
+
+- Views analíticas para sumarização e insights:
+
+    - ```production_summary```
+    - ```top_actors_by_type```
+    - ```yearly_production_trends```
+    - ```crew_analysis```
+
+- Índices criados nas colunas ano_producao, tipo_id, pessoaID, producaoID, e LOWER(papel) para otimizar joins e filtros.
+
 ## Mapeamento do Esquema Analítico:
 
 | tipo_id | Categoria        | Justificativa (exemplos de títulos)                                                                                      |
@@ -73,7 +91,7 @@ docker compose up -d
 | 1       | Filmes           | “Campanile d’oro”, “Cultural Menace”, “Clinic, The”, “Black Spot, The”                                                   |
 | 2       | Séries de TV     | “Star Trek: Deep Space Nine”, “Adventure Inc.”, “Calle en que vivimos, La”                                              |
 | 3       | Curtas-metragens   | “Überfall in Glasgow”, “Überstunde”, “Über ganz Spanien wolkenloser Himmel”                                             |
-| 4       | Filme independente | “Sports Illustrated Swimsuit”, “Paris Chic”, “Talk Dirty to Me, Part III”                                               |
+| 4       | Filmes independentes | “Sports Illustrated Swimsuit”, “Paris Chic”, “Talk Dirty to Me, Part III”                                               |
 | 5       | Documentários | “Zodiak”, “XV FIFA World Cup”, “Zeiten ändern sich”, “Winning Streak, The”                                              |
 | 6       | Videogames       | “Cold Fear”, “Counter Strike”, “Before Crisis: Final Fantasy VII”, “Cruis’n Exotica”                                     |
 | 7       | Episódios        | “Jobs for the Girls”, “The Box of Chocolates”, “Act 8” (sugere animações curtas)                                        |
