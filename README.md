@@ -160,7 +160,7 @@ docker compose up -d
 
 ## Backup e Recuperação
 
-## 1. Gerar Backup Dentro do Container
+## Gerar Backup Dentro do Container
 
 Acesse o container e gere o arquivo `.dump` com o comando `pg_dump`:
 
@@ -176,7 +176,7 @@ docker exec -it postgresql ls -lh /tmp/backup_cinetech.dump
 
 ---
 
-## 2. Criar Banco de Teste e Restaurar
+## Criar Banco de Teste e Restaurar
 
 Primeiro, garanta que o banco de teste não exista e crie-o novamente:
 
