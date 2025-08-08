@@ -110,7 +110,7 @@ docker compose up -d
 
 ## Uso de Variáveis de Ambiente (.env):
 
-O projeto utiliza um arquivo ```.env``` para armazenar credenciais e configurações sensíveis de acesso ao banco de dados. Isso garante segurança e facilita a configuração do ambiente.
+O projeto armazena credenciais e outros parâmetros sensíveis de conexão no arquivo ```.env```, o que aumenta a segurança e simplifica a configuração do ambiente.
 
 Exemplo de variáveis utilizadas:
 ```bash
