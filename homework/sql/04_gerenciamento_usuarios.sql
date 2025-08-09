@@ -69,7 +69,8 @@ GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA analytics TO data_scientist
 -- SELECT * FROM analytics.documentaries LIMIT 5;
 -- UPDATE analytics.animations SET papel = 'Father 2' WHERE id = 1
 
--- User pedro_data_analista_jr
+-- User maria_data_scientist
+-- SELECT * FROM analytics.movies LIMIT 5;
 -- UPDATE analytics.animations SET papel = 'Father 2' WHERE id = 1
 
 
