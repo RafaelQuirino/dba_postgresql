@@ -20,8 +20,8 @@ DB_CONFIG = {
     'password': os.getenv('DB_PASSWORD', '')
 }
 
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "homework" / "data"
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
 
 # Utilidades de parsing/normalização
 def detectar_encoding(arquivo: Path) -> str:
@@ -44,7 +44,7 @@ def processar_producao(conn, arquivo: Path) -> None:
     linhas  = [l.strip() for l in arquivo.read_text(encoding=enc, errors="replace").splitlines() if l.strip()]
 
     print(f"Processando {len(linhas)} produções...")
-    with conn.cursor() as cur, tqdm(total=len(linhas), desc="Producao") as bar:
+    with conn.cursor() as cur, tqdm(total=len(linhas), desc="producao") as bar:
         registros = []
         for linha in linhas:
             dados = linha.split("##")
@@ -59,7 +59,7 @@ def processar_producao(conn, arquivo: Path) -> None:
             bar.update()
 
         sql = """
-            INSERT INTO Producao (producaoID, titulo, ano_producao, tipo_ID)
+            INSERT INTO producao (producaoID, titulo, ano_producao, tipo_ID)
             VALUES (%s, %s, %s, %s)
             ON CONFLICT (producaoID) DO NOTHING;
         """
@@ -71,7 +71,7 @@ def processar_pessoa(conn, arquivo: Path) -> None:
     linhas  = [l.strip() for l in arquivo.read_text(encoding=enc, errors="replace").splitlines() if l.strip()]
 
     print(f"Processando {len(linhas)} pessoas...")
-    with conn.cursor() as cur, tqdm(total=len(linhas), desc="Pessoa") as bar:
+    with conn.cursor() as cur, tqdm(total=len(linhas), desc="pessoa") as bar:
         registros = []
         for linha in linhas:
             dados = linha.split("##")
@@ -81,7 +81,7 @@ def processar_pessoa(conn, arquivo: Path) -> None:
             bar.update()
 
         sql = """
-            INSERT INTO Pessoa (pessoaID, nome)
+            INSERT INTO pessoa (pessoaID, nome)
             VALUES (%s, %s)
             ON CONFLICT (pessoaID) DO NOTHING;
         """
@@ -93,7 +93,7 @@ def processar_equipe(conn, arquivo: Path) -> None:
     linhas  = [l.strip() for l in arquivo.read_text(encoding=enc, errors="replace").splitlines() if l.strip()]
 
     print(f"Processando {len(linhas)} equipes...")
-    with conn.cursor() as cur, tqdm(total=len(linhas), desc="Equipe") as bar:
+    with conn.cursor() as cur, tqdm(total=len(linhas), desc="equipe") as bar:
         registros = []
         for linha in linhas:
             dados = linha.split("##")
@@ -103,7 +103,7 @@ def processar_equipe(conn, arquivo: Path) -> None:
             bar.update()
 
         sql = """
-            INSERT INTO Equipe (pessoaID, producaoID, papel)
+            INSERT INTO equipe (pessoaID, producaoID, papel)
             VALUES (%s, %s, %s)
             ON CONFLICT (pessoaID, producaoID) DO NOTHING;
         """
