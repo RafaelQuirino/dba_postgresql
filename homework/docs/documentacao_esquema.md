@@ -48,119 +48,22 @@ Possui tabelas derivadas segmentadas por tipo de produção e otimizadas para an
 - ```yearly_production_trends```
 - ```crew_analysis```
 
-### 3) 🐘 Acessar o PostgreSQL via psql
-```bash
-docker exec -it postgresql bash
-psql -U postgres
-```
-### 4) 📦 Inserir dados (ingestão)
-Execute a rotina de ingestão no container ```ingestao```:
+## 🔑 Chaves e Restrições
 
-```bash
-docker exec -it ingestao bash
+| Tabela  | Chave Primária           | Chaves Estrangeiras                                   |
+|---------|--------------------------|-------------------------------------------------------|
+| producao| producaoID               | —                                                     |
+| pessoa  | pessoaID                 | —                                                     |
+| equipe  | (pessoaID, producaoID)   | pessoaID → pessoa, producaoID → producao              |
 
-cd /app
-ls
+## ⚡ Estratégias de Indexação
 
-python ingestao_dados.py
-```
-- 💡 **Dica:** Após a ingestão, consulte os dados pelo **pgAdmin** (se estiver no compose) ou diretamente pelo **psql**.
-- 🔎 **pgAdmin:** acesse ```http://localhost:8080``` (ou a porta definida no ```docker-compose.yml```).
+| Tabela             | Coluna(s) Indexada(s) | Motivo                                     |
+|--------------------|-----------------------|--------------------------------------------|
+| producao           | ano, tipo_id          | Filtros e agrupamentos frequentes          |
+| equipe             | pessoaID, producaoID  | Joins e contagens                          |
+| equipe             | LOWER(papel)          | Análise por papel da equipe                |
+| analytics.movies   | ano_producao          | Tendência anual de filmes                  |
+| analytics.tv_shows | ano_producao          | Tendência anual de séries                  |
+| analytics.*        | ano_producao          | Índices replicados nas tabelas analíticas  |
 
-## 🧰 Comandos Docker Úteis
-Recriar containers/volumes do zero:
-```bash
-docker compose down --volumes --remove-orphans
-docker compose build
-docker compose up -d
-```
-
-## 🧱 Esquema do Banco de Dados
-- 🗃️ **Schemas:**
-
-    - ```raw_data```: dados brutos (produções, pessoas e equipes).
-
-    - ```analytics```: estrutura segmentada por tipo de produção para facilitar análises.
-
-- 🔑 **Integridade:**
-
-    - Tabelas com tipos apropriados, chaves primárias e estrangeiras.
-
-- 👁️ **Views analíticas:**
-
-    - ```production_summary```
-
-    - ```top_actors_by_type```
-
-    - ```yearly_production_trends```
-
-    - ```crew_analysis```
-
-- 🚀 **Performance:**
-
-    - Índices em: ```ano_producao```, ```tipo_id```, ```pessoaID```, ```producaoID```, e ```LOWER(papel)``` para otimizar ***joins*** e filtros.
-
-## 📊 Mapeamento do Esquema Analítico
-| tipo\_id | Categoria               | Justificativa (exemplos de títulos)                                                  |
-| -------: | ----------------------- | ------------------------------------------------------------------------------------ |
-|        1 | 🎥 Filmes               | “Campanile d’oro”, “Cultural Menace”, “Clinic, The”, “Black Spot, The”               |
-|        2 | 📺 Séries de TV         | “Star Trek: Deep Space Nine”, “Adventure Inc.”, “Calle en que vivimos, La”           |
-|        3 | 🎞️ Curtas-metragens    | “Überfall in Glasgow”, “Überstunde”, “Über ganz Spanien wolkenloser Himmel”          |
-|        4 | 🎬 Filmes independentes | “Sports Illustrated Swimsuit”, “Paris Chic”, “Talk Dirty to Me, Part III”            |
-|        5 | 🎙️ Documentários       | “Zodiak”, “XV FIFA World Cup”, “Zeiten ändern sich”, “Winning Streak, The”           |
-|        6 | 🕹️ Videogames          | “Cold Fear”, “Counter Strike”, “Before Crisis: Final Fantasy VII”, “Cruis’n Exotica” |
-|        7 | 📼 Episódios            | “Jobs for the Girls”, “The Box of Chocolates”, “Act 8” (sugere animações curtas)     |
-
-## 👤 Acesso de Usuários
-- 👥 **Usuários e perfis:**
-
-    - ```analyst_movies```, ```analyst_tv```, ```analyst_games```, ```analyst_docs```: leitura por tipo.
-
-    - ```analyst_all```: leitura completa no schema analytics.
-
-    - ```data_scientist```: leitura e escrita no schema analytics.
-
-- 🛡️ **Permissões:**
-
-    - Concedidas com ```GRANT/REVOKE``` e testadas com ```SET ROLE```.
-
-## 🧩 Script de Ingestão (```python/ingestao_dados.py```)
-
-- 🔐 Carrega variáveis do ```.env``` para conexão ao ```PostgreSQL``` via ```psycopg2```.
-
-- 📄 Lê ```.txt``` (delimitados por ```##```) em ```homework/data```, detectando ***encoding*** com ```chardet``` e ignorando linhas vazias.
-
-- 🧽 Normaliza dados: ```to_int``` para inteiros; ```ano_para_db``` converte ```0``` em ```NULL``` (```None```).
-
-- 🚚 Insere em lotes com ```execute_batch(..., page_size=1000)``` e usa ```ON CONFLICT DO NOTHING``` para evitar duplicatas.
-
-- 🔄 Transação única (```autocommit=False```): ```commit``` ao final; ```rollback``` em caso de erro.
-
-- ⏱️ Progresso com ```tqdm``` e descarte de linhas malformadas.
-
-🗄️ **Tabelas de destino:**
-
-- Producao(```producaoID```, ```titulo```, ```ano_producao```, ```tipo_ID```)
-
-- Pessoa(```pessoaID```, ```nome```)
-
-- Equipe(```pessoaID```, ```producaoID```, ```papel```)
-
-📥 **Arquivos ingeridos:**
-
-- ```homework/data/producao.txt```
-
-- ```homework/data/pessoa.txt```
-
-- ```homework/data/equipe.txt```
-
-## 🔐 Variáveis de Ambiente (.env)
-O projeto utiliza um arquivo ```.env``` para credenciais e parâmetros sensíveis.
-
-```bash
-DB_HOST=postgresql
-DB_PORT=5432
-DB_NAME=cinetech_productions
-DB_USER=postgres
-DB_PASSWORD=postgres123
-```
