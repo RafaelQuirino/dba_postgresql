@@ -9,7 +9,6 @@
 ---
 
 ## 🗂️ Estrutura do Projeto
-<details>
 <summary><b>Mostrar/ocultar árvore de diretórios</b></summary>
 
 ```text
@@ -27,7 +26,6 @@ homework/
 │   ├── guia_acesso_usuarios.md
 └── README.md
 ```
-<details>
 
 ## ⚙️ Requisitos
 🐳 **Docker** e **Docker Compose**
