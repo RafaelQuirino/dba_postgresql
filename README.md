@@ -9,7 +9,6 @@
 ---
 
 ## 🗂️ Estrutura do Projeto
-<summary><b>Mostrar/ocultar árvore de diretórios</b></summary>
 
 ```text
 homework/
