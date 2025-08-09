@@ -27,8 +27,8 @@ Possui os dados brutos ingeridos a partir dos arquivos:
 - **equipe(id_pessoa, id_producao, papel)**
 
     - PK: (```pessoaID```, ```producaoID```)
-    - FK: ```id_pessoa``` → pessoa
-    - FK: ```id_producao``` → producao
+    - FK: ```pessoaID``` → pessoa
+    - FK: ```producaoID``` → producao
     - Trata-se de uma tabela associativa, obtida através do relacionamento M:N entre pessoa e produção.
 
 ### 2) 🧱 Subir os serviços com Docker Compose
