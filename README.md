@@ -1,49 +1,58 @@
-# Trabalho Prático: Banco de Dados de Produções Artísticas
+# 🎬 Trabalho Prático — Banco de Dados de Produções Artísticas
 
-Neste repositório encontra-se a solução do Trabalho Final da disciplina de Administração de Bancos de Dados (DBA), dedicada ao gerenciamento dos dados da empresa fictícia CineTech Studios.
+> Solução do **Trabalho Final** da disciplina de **Administração de Bancos de Dados (DBA)**, dedicada ao gerenciamento dos dados da empresa fictícia **CineTech Studios**.
 
-## Estrutura do Projeto
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Python](https://img.shields.io/badge/Python-3.9-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+
+---
+
+## 🗂️ Estrutura do Projeto
+<details>
+<summary><b>Mostrar/ocultar árvore de diretórios</b></summary>
 
 ```text
 homework/
 ├── sql/
-│   ├── 01_criacao_banco.sql
-│   ├── 02_projeto_esquema.sql
-│   ├── 03_gerenciamento_usuarios.sql
-│   ├── 04_views_analytics.sql
-│   ├── 05_consultas_analise.sql
+│   ├── 01_criacao_banco.sql
+│   ├── 02_projeto_esquema.sql
+│   ├── 03_gerenciamento_usuarios.sql
+│   ├── 04_views_analytics.sql
+│   ├── 05_consultas_analise.sql
 ├── python/
-│   └── ingestao_dados.py
+│   └── ingestao_dados.py
 ├── docs/
-│   ├── documentacao_esquema.md
-│   ├── guia_acesso_usuarios.md
+│   ├── documentacao_esquema.md
+│   ├── guia_acesso_usuarios.md
 └── README.md
 ```
+<details>
 
-## Instruções - Como Executar o Projeto?
+## ⚙️ Requisitos
+🐳 **Docker** e **Docker Compose**
+🐍 **Python 3.9.13**
+🧰 **Git**
 
-Requisitos: Docker, Git e Python 3.9.13 instalados.
-
-### Passo 1: Clonar o Reposiório 
+## 🚀 Como Executar
+### 1) 📥 Clonar o repositório
 
 ```bash
 git clone <url_do_repositorio>
 cd <pasta_do_repositorio_clonado>
 ```
-### Passo 2: Subir o docker-compose
 
+### 2) 🧱 Subir os serviços com Docker Compose
 ```bash
 docker compose up -d
 ```
-### Passo 3: Acessar o PostgreSQL via psql
 
+### 3) 🐘 Acessar o PostgreSQL via psql
 ```bash
 docker exec -it postgresql bash
 psql -U postgres
 ```
-
-### Passo 4: Inserção de dados
-
+### 4) 📦 Inserir dados (ingestão)
 Execute a rotina de ingestão no container ```ingestao```:
 
 ```bash
@@ -54,91 +63,99 @@ ls
 
 python ingestao_dados.py
 ```
-O script ```ingestao_dados.py``` carrega as informações no banco. Depois disso, você pode consultar os dados pelo pgAdmin (caso o serviço estiver no compose) ou diretamente pelo ```psql```.
+💡 **Dica:** Após a ingestão, consulte os dados pelo **pgAdmin** (se estiver no compose) ou diretamente pelo **psql**.
+🔎 **pgAdmin:** acesse ```http://localhost:8080``` (ou a porta definida no ```docker-compose.yml```).
 
-**OBS.:** Para acessar o pgAdmin basta inserir ```localhost:8080``` (geralmente) no seu navegador, caso na seja essa a porta, verificar no arquivo ```docker-compose.yml```.
-
-## Comandos Docker Úteis:
-
-Caso deseje recriar os containers/volumes:
+## 🧰 Comandos Docker Úteis
+Recriar containers/volumes do zero:
 ```bash
 docker compose down --volumes --remove-orphans
 docker compose build
 docker compose up -d
 ```
-## Esquema do Banco de Dados:
 
-- Foram criados dois schemas:
+## 🧱 Esquema do Banco de Dados
+- 🗃️ **Schemas:**
 
-    - ```raw_data```: estrutura bruta com dados de produções, pessoas e equipes.
-    - ```analytics```: estrutura segmentada por tipo de produção para facilitar análise.
+    - ```raw_data```: dados brutos (produções, pessoas e equipes).
 
-- Tabelas criadas com tipos apropriados, chaves primárias e estrangeiras.
+    - ```analytics```: estrutura segmentada por tipo de produção para facilitar análises.
 
-- Views analíticas para sumarização e insights:
+- 🔑 **Integridade:**
+
+    - Tabelas com tipos apropriados, chaves primárias e estrangeiras.
+
+- 👁️ **Views analíticas:**
 
     - ```production_summary```
+
     - ```top_actors_by_type```
+
     - ```yearly_production_trends```
+
     - ```crew_analysis```
 
-- Índices criados nas colunas ano_producao, tipo_id, pessoaID, producaoID, e LOWER(papel) para otimizar joins e filtros.
+- 🚀 **Performance:**
 
-## Mapeamento do Esquema Analítico:
+    - Índices em: ```ano_producao```, ```tipo_id```, ```pessoaID```, ```producaoID```, e ```LOWER(papel)``` para otimizar ***joins*** e filtros.
 
-| tipo_id | Categoria        | Justificativa (exemplos de títulos)                                                                                      |
-|--------:|------------------|--------------------------------------------------------------------------------------------------------------------------|
-| 1       | Filmes           | “Campanile d’oro”, “Cultural Menace”, “Clinic, The”, “Black Spot, The”                                                   |
-| 2       | Séries de TV     | “Star Trek: Deep Space Nine”, “Adventure Inc.”, “Calle en que vivimos, La”                                              |
-| 3       | Curtas-metragens   | “Überfall in Glasgow”, “Überstunde”, “Über ganz Spanien wolkenloser Himmel”                                             |
-| 4       | Filmes independentes | “Sports Illustrated Swimsuit”, “Paris Chic”, “Talk Dirty to Me, Part III”                                               |
-| 5       | Documentários | “Zodiak”, “XV FIFA World Cup”, “Zeiten ändern sich”, “Winning Streak, The”                                              |
-| 6       | Videogames       | “Cold Fear”, “Counter Strike”, “Before Crisis: Final Fantasy VII”, “Cruis’n Exotica”                                     |
-| 7       | Episódios        | “Jobs for the Girls”, “The Box of Chocolates”, “Act 8” (sugere animações curtas)                                        |
+## 📊 Mapeamento do Esquema Analítico
+| tipo\_id | Categoria               | Justificativa (exemplos de títulos)                                                  |
+| -------: | ----------------------- | ------------------------------------------------------------------------------------ |
+|        1 | 🎥 Filmes               | “Campanile d’oro”, “Cultural Menace”, “Clinic, The”, “Black Spot, The”               |
+|        2 | 📺 Séries de TV         | “Star Trek: Deep Space Nine”, “Adventure Inc.”, “Calle en que vivimos, La”           |
+|        3 | 🎞️ Curtas-metragens    | “Überfall in Glasgow”, “Überstunde”, “Über ganz Spanien wolkenloser Himmel”          |
+|        4 | 🎬 Filmes independentes | “Sports Illustrated Swimsuit”, “Paris Chic”, “Talk Dirty to Me, Part III”            |
+|        5 | 🎙️ Documentários       | “Zodiak”, “XV FIFA World Cup”, “Zeiten ändern sich”, “Winning Streak, The”           |
+|        6 | 🕹️ Videogames          | “Cold Fear”, “Counter Strike”, “Before Crisis: Final Fantasy VII”, “Cruis’n Exotica” |
+|        7 | 📼 Episódios            | “Jobs for the Girls”, “The Box of Chocolates”, “Act 8” (sugere animações curtas)     |
 
-## Acesso de Usuários:
+## 👤 Acesso de Usuários
+- 👥 **Usuários e perfis:**
 
-- Foram criados 6 usuários com níveis de acesso distintos:
+    - ```analyst_movies```, ```analyst_tv```, ```analyst_games```, ```analyst_docs```: leitura por tipo.
 
-    - ```analyst_movies```, ```analyst_tv```, ```analyst_games```, ```analyst_docs```: acesso somente leitura por tipo.
-    - ```analyst_all```: leitura total no schema analytics.
+    - ```analyst_all```: leitura completa no schema analytics.
+
     - ```data_scientist```: leitura e escrita no schema analytics.
 
-- Permissões concedidas com ```GRANT/REVOKE``` e testadas com ```SET ROLE```.
+- 🛡️ **Permissões:**
 
-## Script de Ingestão (```python/ingestao_dados.py```)
+    - Concedidas com ```GRANT/REVOKE``` e testadas com ```SET ROLE```.
 
-- Carrega variáveis de ambiente do ```.env``` para conexão ao ```PostgreSQL``` via ```psycopg2```.
+## 🧩 Script de Ingestão (```python/ingestao_dados.py```)
 
-- Lê arquivos ```.txt``` (delimitados por ```##```) em ```homework/data```, detectando o encoding automaticamente com ```chardet``` e ignorando linhas vazias.
+- 🔐 Carrega variáveis do ```.env``` para conexão ao ```PostgreSQL``` via ```psycopg2```.
 
-- Normaliza dados: ```to_int``` para inteiros; ```ano_para_db``` converte ```0``` em ```NULL``` (```None```).
+- 📄 Lê ```.txt``` (delimitados por ```##```) em ```homework/data```, detectando ***encoding*** com ```chardet``` e ignorando linhas vazias.
 
-- Insere em lotes com ```execute_batch(..., page_size=1000)``` e usa ```ON CONFLICT DO NOTHING``` para evitar duplicatas.
+- 🧽 Normaliza dados: ```to_int``` para inteiros; ```ano_para_db``` converte ```0``` em ```NULL``` (```None```).
 
-- Executa tudo em uma única transação ```(autocommit=False)```: faz ```commit``` ao final e ```rollback``` em caso de erro.
+- 🚚 Insere em lotes com ```execute_batch(..., page_size=1000)``` e usa ```ON CONFLICT DO NOTHING``` para evitar duplicatas.
 
-- Ignora linhas malformadas (com poucas colunas) e exibe progresso com ```tqdm```.
+- 🔄 Transação única (```autocommit=False```): ```commit``` ao final; ```rollback``` em caso de erro.
 
-**Tabelas de destino**
-- ```Producao(producaoID, titulo, ano_producao, tipo_ID)```
+- ⏱️ Progresso com ```tqdm``` e descarte de linhas malformadas.
 
-- ```Pessoa(pessoaID, nome)```
+🗄️ **Tabelas de destino:**
 
-- ```Equipe(pessoaID, producaoID, papel)```
+- Producao(```producaoID```, ```titulo```, ```ano_producao```, ```tipo_ID```)
 
-**Arquivos ingeridos**
+- Pessoa(```pessoaID```, ```nome```)
+
+- Equipe(```pessoaID```, ```producaoID```, ```papel```)
+
+📥 **Arquivos ingeridos:**
+
 - ```homework/data/producao.txt```
 
 - ```homework/data/pessoa.txt```
- 
+
 - ```homework/data/equipe.txt```
 
-## Uso de Variáveis de Ambiente (.env):
+## 🔐 Variáveis de Ambiente (.env)
+O projeto utiliza um arquivo ```.env```` para credenciais e parâmetros sensíveis.
 
-O projeto armazena credenciais e outros parâmetros sensíveis de conexão no arquivo ```.env```, o que aumenta a segurança e simplifica a configuração do ambiente.
-
-Exemplo de variáveis utilizadas:
 ```bash
 DB_HOST=postgresql
 DB_PORT=5432
