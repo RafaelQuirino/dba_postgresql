@@ -36,11 +36,11 @@ Possui tabelas derivadas segmentadas por tipo de produção e otimizadas para an
 **Tabelas:**
 - 🎥 **movies:** tipo_id = 1
 - 📺 **tv_shows:** tipo_id = 2
-- 🎞️**short_films:** tipo_id = 3
-- 🎬**independent_films** tipo_id = 4
-- 🎙️**documentaries:** tipo_id = 5
-- 🕹️**video_games:** tipo_id = 6
-- 📼**episodes:** tipo_id = 7
+- 🎞️ **short_films:** tipo_id = 3
+- 🎬 **independent_films** tipo_id = 4
+- 🎙️ **documentaries:** tipo_id = 5
+- 🕹️ **video_games:** tipo_id = 6
+- 📼 **episodes:** tipo_id = 7
 
 **Views Analíticas:**
 - ```production_summary```
