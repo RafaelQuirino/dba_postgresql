@@ -28,7 +28,7 @@ homework/
 
 ## ⚙️ Requisitos
 - 🐳 **Docker** e **Docker Compose**
-- 🐍 **Python 3.9.13**
+- 🐍 **Python 3.12.10**
 - 🧰 **Git**
 
 ## 🚀 Como Executar
