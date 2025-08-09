@@ -154,7 +154,7 @@ docker compose up -d
 - ```homework/data/equipe.txt```
 
 ## 🔐 Variáveis de Ambiente (.env)
-O projeto utiliza um arquivo ```.env```` para credenciais e parâmetros sensíveis.
+O projeto utiliza um arquivo ```.env``` para credenciais e parâmetros sensíveis.
 
 ```bash
 DB_HOST=postgresql
