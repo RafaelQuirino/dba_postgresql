@@ -60,8 +60,8 @@ ls
 
 python ingestao_dados.py
 ```
-💡 **Dica:** Após a ingestão, consulte os dados pelo **pgAdmin** (se estiver no compose) ou diretamente pelo **psql**.
-🔎 **pgAdmin:** acesse ```http://localhost:8080``` (ou a porta definida no ```docker-compose.yml```).
+- 💡 **Dica:** Após a ingestão, consulte os dados pelo **pgAdmin** (se estiver no compose) ou diretamente pelo **psql**.
+- 🔎 **pgAdmin:** acesse ```http://localhost:8080``` (ou a porta definida no ```docker-compose.yml```).
 
 ## 🧰 Comandos Docker Úteis
 Recriar containers/volumes do zero:
