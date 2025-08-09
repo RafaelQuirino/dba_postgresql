@@ -1,8 +1,12 @@
+# Bibliotecas
 import os
+from pathlib import Path
+from typing import Optional
 from dotenv import load_dotenv
-import psycopg2
-from tqdm import tqdm
 import chardet
+import psycopg2
+from psycopg2.extras import execute_batch
+from tqdm import tqdm
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -16,106 +20,114 @@ DB_CONFIG = {
     'password': os.getenv('DB_PASSWORD', '')
 }
 
-def detectar_encoding(arquivo):
-    """Detecta o encoding do arquivo"""
-    with open(arquivo, 'rb') as f:
-        resultado = chardet.detect(f.read(10000))  # Lê apenas os primeiros 10kb para análise
-    return resultado['encoding'] or 'utf-8'
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "homework" / "data"
 
-def processar_arquivos():
-    """Função principal para processar todos os arquivos"""
-    # Caminhos relativos aos arquivos
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    producao_path = os.path.join(base_dir, 'homework', 'data', 'producao.txt')
-    pessoa_path = os.path.join(base_dir, 'homework', 'data', 'pessoa.txt')
-    equipe_path = os.path.join(base_dir, 'homework', 'data', 'equipe.txt')
-    
-    # Processa cada arquivo
-    processar_producoes(producao_path)
-    processar_pessoas(pessoa_path)
-    processar_equipes(equipe_path)
+# Utilidades de parsing/normalização
+def detectar_encoding(arquivo: Path) -> str:
+    with arquivo.open("rb") as f:
+        return chardet.detect(f.read(10_000)).get("encoding") or "utf-8"
 
-def converter_int(valor, padrao=0):
-    """Converte para inteiro com tratamento de erros"""
+def to_int(valor: str | None, default: int | None = 0) -> Optional[int]:
     try:
-        return int(valor)
+        return int(valor) if valor is not None else default
     except (ValueError, TypeError):
-        return padrao
+        return default
 
-def processar_producoes(arquivo):
-    """Processa o arquivo de produções"""
-    encoding = detectar_encoding(arquivo)
-    conn = psycopg2.connect(**DB_CONFIG)
-    cursor = conn.cursor()
-    
-    with open(arquivo, 'r', encoding=encoding, errors='replace') as f:
-        linhas = [linha.strip() for linha in f if linha.strip()]
-    
-    print(f"\nProcessando {len(linhas)} produções...")
-    for linha in tqdm(linhas):
-        dados = linha.split('##')
-        if len(dados) >= 4:  # Verifica se tem todas as colunas necessárias
-            cursor.execute(
-                """INSERT INTO Producao (producaoID, titulo, ano_producao, tipo_ID) 
-                   VALUES (%s, %s, %s, %s)
-                   ON CONFLICT (producaoID) DO NOTHING""",
-                (converter_int(dados[0]), dados[1], 
-                 converter_int(dados[2]), converter_int(dados[3])))
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print(f"✔ {len(linhas)} produções processadas!")
+def ano_para_db(valor: str | None) -> Optional[int]:
+    ano = to_int(valor, default=None)
+    return None if ano == 0 else ano
 
-def processar_pessoas(arquivo):
-    """Processa o arquivo de pessoas"""
-    encoding = detectar_encoding(arquivo)
-    conn = psycopg2.connect(**DB_CONFIG)
-    cursor = conn.cursor()
-    
-    with open(arquivo, 'r', encoding=encoding, errors='replace') as f:
-        linhas = [linha.strip() for linha in f if linha.strip()]
-    
-    print(f"\nProcessando {len(linhas)} pessoas...")
-    for linha in tqdm(linhas):
-        dados = linha.split('##')
-        if len(dados) >= 2:  # Verifica se tem todas as colunas necessárias
-            cursor.execute(
-                """INSERT INTO Pessoa (pessoaID, nome) 
-                    VALUES (%s, %s)
-                    ON CONFLICT (pessoaID) DO NOTHING""",
-                (converter_int(dados[0]), dados[1]))
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print(f"✔ {len(linhas)} pessoas processadas!")
+# Processamento
+def processar_producao(conn, arquivo: Path) -> None:
+    enc     = detectar_encoding(arquivo)
+    linhas  = [l.strip() for l in arquivo.read_text(encoding=enc, errors="replace").splitlines() if l.strip()]
 
-def processar_equipes(arquivo):
-    """Processa o arquivo de equipes"""
-    encoding = detectar_encoding(arquivo)
-    conn = psycopg2.connect(**DB_CONFIG)
-    cursor = conn.cursor()
-    
-    with open(arquivo, 'r', encoding=encoding, errors='replace') as f:
-        linhas = [linha.strip() for linha in f if linha.strip()]
-    
-    print(f"\nProcessando {len(linhas)} equipes...")
-    for linha in tqdm(linhas):
-        dados = linha.split('##')
-        if len(dados) >= 3:  # Verifica se tem todas as colunas necessárias
-            cursor.execute(
-                """INSERT INTO Equipe (pessoaID, producaoID, papel) 
-                   VALUES (%s, %s, %s)
-                   ON CONFLICT (pessoaID, producaoID) DO NOTHING""",
-                (converter_int(dados[0]), converter_int(dados[1]), dados[2]))
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print(f"✔ {len(linhas)} equipes processadas!")
+    print(f"Processando {len(linhas)} produções...")
+    with conn.cursor() as cur, tqdm(total=len(linhas), desc="Producao") as bar:
+        registros = []
+        for linha in linhas:
+            dados = linha.split("##")
+            if len(dados) < 4:
+                bar.update();  continue
+            registros.append((
+                to_int(dados[0]),
+                dados[1],
+                ano_para_db(dados[2]),
+                to_int(dados[3])
+            ))
+            bar.update()
+
+        sql = """
+            INSERT INTO Producao (producaoID, titulo, ano_producao, tipo_ID)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (producaoID) DO NOTHING;
+        """
+        execute_batch(cur, sql, registros, page_size=1_000)
+    print("✔ produções concluídas.")
+
+def processar_pessoa(conn, arquivo: Path) -> None:
+    enc     = detectar_encoding(arquivo)
+    linhas  = [l.strip() for l in arquivo.read_text(encoding=enc, errors="replace").splitlines() if l.strip()]
+
+    print(f"Processando {len(linhas)} pessoas...")
+    with conn.cursor() as cur, tqdm(total=len(linhas), desc="Pessoa") as bar:
+        registros = []
+        for linha in linhas:
+            dados = linha.split("##")
+            if len(dados) < 2:
+                bar.update();  continue
+            registros.append((to_int(dados[0]), dados[1]))
+            bar.update()
+
+        sql = """
+            INSERT INTO Pessoa (pessoaID, nome)
+            VALUES (%s, %s)
+            ON CONFLICT (pessoaID) DO NOTHING;
+        """
+        execute_batch(cur, sql, registros, page_size=1_000)
+    print("✔ pessoas concluídas.")
+
+def processar_equipe(conn, arquivo: Path) -> None:
+    enc     = detectar_encoding(arquivo)
+    linhas  = [l.strip() for l in arquivo.read_text(encoding=enc, errors="replace").splitlines() if l.strip()]
+
+    print(f"Processando {len(linhas)} equipes...")
+    with conn.cursor() as cur, tqdm(total=len(linhas), desc="Equipe") as bar:
+        registros = []
+        for linha in linhas:
+            dados = linha.split("##")
+            if len(dados) < 3:
+                bar.update();  continue
+            registros.append((to_int(dados[0]), to_int(dados[1]), dados[2]))
+            bar.update()
+
+        sql = """
+            INSERT INTO Equipe (pessoaID, producaoID, papel)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (pessoaID, producaoID) DO NOTHING;
+        """
+        execute_batch(cur, sql, registros, page_size=1_000)
+    print("✔ equipes concluídas.")
+
+# Main
+def main() -> None:
+    print("=== INICIANDO INGESTÃO DE DADOS ===")
+    try:
+        with psycopg2.connect(**DB_CONFIG) as conn:
+            conn.autocommit = False
+            processar_producao(conn, DATA_DIR / "producao.txt")
+            processar_pessoa(conn,   DATA_DIR / "pessoa.txt")
+            processar_equipe(conn,   DATA_DIR / "equipe.txt")
+            conn.commit()
+            print("Transação confirmada.")
+    except Exception as exc:
+        print(f"Erro durante a ingestão: {exc}")
+        if "conn" in locals() and conn:
+            conn.rollback()
+            print("Rollback efetuado.")
+    finally:
+        print("Processo concluído.")
 
 if __name__ == "__main__":
-    print("\n=== INICIANDO INGESTÃO DE DADOS ===")
-    processar_arquivos()
-    print("\nProcesso concluído. Verifique os logs acima.\n")
+    main()
