@@ -31,10 +31,22 @@ Possui os dados brutos ingeridos a partir dos arquivos:
     - FK: ```producaoID``` → producao
     - Trata-se de uma tabela associativa, obtida através do relacionamento M:N entre pessoa e produção.
 
-### 2) 🧱 Subir os serviços com Docker Compose
-```bash
-docker compose up -d
-```
+### 2) analytics
+Possui tabelas derivadas segmentadas por tipo de produção e otimizadas para análise.
+**Tabelas:**
+- 🎥 **movies:** tipo_id = 1
+- 📺 **tv_shows:** tipo_id = 2
+- 🎞️**short_films:** tipo_id = 3
+- 🎬**independent_films** tipo_id = 4
+- 🎙️**documentaries:** tipo_id = 5
+- 🕹️**video_games:** tipo_id = 6
+- 📼**episodes:** tipo_id = 7
+
+**Views Analíticas:**
+- ```production_summary```
+- ```top_actors_by_type```
+- ```yearly_production_trends```
+- ```crew_analysis```
 
 ### 3) 🐘 Acessar o PostgreSQL via psql
 ```bash
