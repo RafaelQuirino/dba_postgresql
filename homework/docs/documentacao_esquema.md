@@ -60,7 +60,7 @@ Possui tabelas derivadas segmentadas por tipo de produção e otimizadas para an
 
 | Tabela             | Coluna(s) Indexada(s) | Motivo                                     |
 |--------------------|-----------------------|--------------------------------------------|
-| producao           | ano, tipo_id          | Filtros e agrupamentos frequentes          |
+| producao           | ano_producao, tipo_id | Filtros e agrupamentos frequentes          |
 | equipe             | pessoaID, producaoID  | Joins e contagens                          |
 | equipe             | LOWER(papel)          | Análise por papel da equipe                |
 | analytics.movies   | ano_producao          | Tendência anual de filmes                  |
