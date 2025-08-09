@@ -123,16 +123,16 @@ docker compose up -d
 **Tabelas de destino**
 - ```Producao(producaoID, titulo, ano_producao, tipo_ID)```
 
-- ```Pessoa(pessoaID, nome)
+- ```Pessoa(pessoaID, nome)```
 
-- ```Equipe(pessoaID, producaoID, papel)
+- ```Equipe(pessoaID, producaoID, papel)```
 
 **Arquivos ingeridos**
-- ```homework/data/producao.txt
+- ```homework/data/producao.txt```
 
-- ```homework/data/pessoa.txt
+- ```homework/data/pessoa.txt```
  
-- ```homework/data/equipe.txt
+- ```homework/data/equipe.txt```
 
 ## Uso de Variáveis de Ambiente (.env):
 
