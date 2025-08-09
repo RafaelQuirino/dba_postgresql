@@ -6,8 +6,10 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: cinetech_productions
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./conf/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql
     expose:
       - 5432
     ports:
@@ -37,15 +39,19 @@ services:
       dockerfile: Dockerfile.python
     container_name: ingestao-txt
     volumes:
-      - ./homework/ingestao_txt:/app
+      - ./homework/data:/data
+      - ./homework/python:/app
     environment:
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_NAME: cinetech_productions
       DB_USER: postgres
       DB_PASSWORD: postgres123
+    env_file:
+      - .env
     depends_on: 
       - postgresql
+    # command: python ingestao_dados.py (Para fazer de forma automática)
 
 volumes:
   pg_data:
