@@ -106,7 +106,33 @@ docker compose up -d
 
 - Permissões concedidas com ```GRANT/REVOKE``` e testadas com ```SET ROLE```.
 
-## Ingestão de Dados:
+## Script de Ingestão (```python/ingestao_dados.py```)
+
+- Carrega variáveis de ambiente do ```.env``` para conexão ao ```PostgreSQL``` via ```psycopg2```.
+
+- Lê arquivos ```.txt``` (delimitados por ```##```) em ```homework/data```, detectando o encoding automaticamente com ```chardet``` e ignorando linhas vazias.
+
+- Normaliza dados: ```to_int``` para inteiros; ```ano_para_db``` converte ```0``` em ```NULL``` (```None```).
+
+- Insere em lotes com ```execute_batch(..., page_size=1000)``` e usa ```ON CONFLICT DO NOTHING``` para evitar duplicatas.
+
+- Executa tudo em uma única transação ```(autocommit=False)```: faz ```commit``` ao final e ```rollback``` em caso de erro.
+
+- Ignora linhas malformadas (com poucas colunas) e exibe progresso com ```tqdm```.
+
+**Tabelas de destino**
+- ```Producao(producaoID, titulo, ano_producao, tipo_ID)```
+
+- ```Pessoa(pessoaID, nome)
+
+- ```Equipe(pessoaID, producaoID, papel)
+
+**Arquivos ingeridos**
+- ```homework/data/producao.txt
+
+- ```homework/data/pessoa.txt
+ 
+- ```homework/data/equipe.txt
 
 ## Uso de Variáveis de Ambiente (.env):
 
