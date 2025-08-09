@@ -12,7 +12,7 @@ Documentar os schemas do banco de dados tem como objetivo definir claramente o p
 Possui os dados brutos ingeridos a partir dos arquivos:
     - ```producao.txt```
     - ```pessoa.txt``` 
-    - ```equipe.txt```
+    - ```equipe.txt```  
 **Tabelas:**
 - **producao(producaoID, titulo, ano, tipo_id)**
 
@@ -32,7 +32,7 @@ Possui os dados brutos ingeridos a partir dos arquivos:
     - Trata-se de uma tabela associativa, obtida através do relacionamento M:N entre pessoa e produção.
 
 ### 2) analytics
-Possui tabelas derivadas segmentadas por tipo de produção e otimizadas para análise.
+Possui tabelas derivadas segmentadas por tipo de produção e otimizadas para análise.  
 **Tabelas:**
 - 🎥 **movies:** tipo_id = 1
 - 📺 **tv_shows:** tipo_id = 2
