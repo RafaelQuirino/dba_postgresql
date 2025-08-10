@@ -7,11 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data_2:/var/lib/postgresql/data
     expose:
       - 5432
     ports:
-      - 5432:5432
+      - 5435:5432
 
   pgadmin:
     build:
@@ -25,7 +25,7 @@ services:
     volumes:
       - ./conf/pgadmin_pass:/pgadmin4/pass
       - ./conf/pgadmin_servers.json:/pgadmin4/servers.json
-      - pgadmin_data:/var/lib/pgadmin
+      - pgadmin_data_2:/var/lib/pgadmin
     ports:
       - 8080:80
     depends_on: 
@@ -64,6 +64,6 @@ services:
       - postgresql
 
 volumes:
-  pg_data:
-  pgadmin_data:
+  pg_data_2:
+  pgadmin_data_2:
 
