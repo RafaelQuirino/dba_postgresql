@@ -1,3 +1,5 @@
+-- Views unificadas e de apoio
+
 CREATE OR REPLACE VIEW analytics.productions_unified AS
 SELECT movie_id        AS production_id, title, year, 'movie'          AS production_type FROM analytics.movies
 UNION ALL
@@ -17,16 +19,18 @@ SELECT web_series_id   AS production_id, title, year, 'web_series'     AS produc
 UNION ALL
 SELECT animation_id    AS production_id, title, year, 'animation'      AS production_type FROM analytics.animations;
 
+-- Resumo por tipo
 CREATE OR REPLACE VIEW analytics.production_summary AS
 SELECT
   production_type,
-  COUNT(*)                         AS total_titles,
-  MIN(year)                        AS first_year,
-  MAX(year)                        AS last_year
+  COUNT(*) AS total_titles,
+  MIN(year) AS first_year,
+  MAX(year) AS last_year
 FROM analytics.productions_unified
 GROUP BY production_type
 ORDER BY production_type;
 
+-- Tendências anuais por tipo
 CREATE OR REPLACE VIEW analytics.yearly_production_trends AS
 SELECT
   year,
@@ -36,6 +40,7 @@ FROM analytics.productions_unified
 GROUP BY year, production_type
 ORDER BY year, production_type;
 
+-- Top “atores/profissionais” por tipo (contagem de participações)
 CREATE OR REPLACE VIEW analytics.top_actors_by_type AS
 WITH actor_counts AS (
   SELECT
@@ -56,12 +61,13 @@ SELECT
 FROM actor_counts
 ORDER BY production_type, rank_per_type, name;
 
+-- Análise de crew por tipo e job
 CREATE OR REPLACE VIEW analytics.crew_analysis AS
 SELECT
   cr.production_type,
   cr.job,
-  COUNT(*)                      AS total_participations,
-  COUNT(DISTINCT cr.person_id)  AS distinct_professionals
+  COUNT(*)                     AS total_participations,
+  COUNT(DISTINCT cr.person_id) AS distinct_professionals
 FROM analytics.crew cr
 GROUP BY cr.production_type, cr.job
 ORDER BY cr.production_type, cr.job;
