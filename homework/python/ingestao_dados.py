@@ -63,6 +63,49 @@ def parse_line_equipe(line):
 		papel = None
 	return (int(pessoa_id), int(producao_id), papel)
 
+def insert_producao(cur, record):
+    cur.execute(
+        'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING',
+        record
+    )
+    return cur.rowcount
+
+def insert_pessoa(cur, record):
+    cur.execute(
+        'INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING',
+        record
+    )
+    return cur.rowcount
+
+def insert_equipe(cur, record):
+    cur.execute(
+        'INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING',
+        record
+    )
+    return cur.rowcount
+
+def insert_data_bulk(table, cur, data, chunk_index=None, start_line=None, lines=None):
+    try:
+        if table == 'producao':
+            cur.executemany(
+                'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING',
+                data
+            )
+        elif table == 'pessoa':
+            cur.executemany(
+                'INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING',
+                data
+            )
+        elif table == 'equipe':
+            cur.executemany(
+                'INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING',
+                data
+            )
+        cur.connection.commit()
+    except Exception as e:
+        print(f"[SQL ERROR] Chunk {chunk_index} (linhas {start_line}-{start_line+len(lines)-1 if start_line is not None and lines is not None else '?'}) {e}")
+        # Não interrompe ingestão
+
 def insert_producao_tipo():
 	"""Cria e popula a tabela producao_tipo com todos os tipos encontrados."""
 	conn = get_connection()
@@ -94,12 +137,17 @@ def process_chunk(args):
     cur = conn.cursor()
     data = []
     parse_func = None
+    insert_func = None
+
     if table == 'producao':
         parse_func = parse_line_producao
+        insert_func = insert_producao
     elif table == 'pessoa':
         parse_func = parse_line_pessoa
+        insert_func = insert_pessoa
     elif table == 'equipe':
         parse_func = parse_line_equipe
+        insert_func = insert_equipe
     else:
         print(f"[ERRO] Tabela desconhecida: {table}")
         return len(lines)
@@ -109,32 +157,24 @@ def process_chunk(args):
         try:
             parsed = parse_func(line)
             if parsed:
-                data.append(parsed)
+                 data.append(parsed)
+            else:
+                 print(f"[PARSE WARNING] Linha {(start_line + idx) if start_line is not None else f'?+{idx}'}: Formato inválido ou dados insuficientes.")
+            # if parsed:
+            #     try:
+            #         affected = insert_func(cur, parsed)
+            #         if affected == 0:
+            #             file_line = (start_line + idx) if start_line is not None else f'?+{idx}'
+            #             print(f"[NO INSERT] Linha {file_line}: Nenhum registro alterado.")
+            #     except Exception as e:
+            #         file_line = (start_line + idx) if start_line is not None else f'?+{idx}'
+            #         print(f"[SQL ERROR] Linha {file_line}: {e}")
         except Exception as e:
             file_line = (start_line + idx) if start_line is not None else f'?+{idx}'
             print(f"\n[PARSE ERROR] Linha {file_line}: {e}")
 
-    # Execução SQL com tratamento de erro
-    try:
-        if table == 'producao':
-            cur.executemany(
-                'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING',
-                data
-            )
-        elif table == 'pessoa':
-            cur.executemany(
-                'INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING',
-                data
-            )
-        elif table == 'equipe':
-            cur.executemany(
-                'INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING',
-                data
-            )
-        conn.commit()
-    except Exception as e:
-        print(f"[SQL ERROR] Chunk {chunk_index} (linhas {start_line}-{start_line+len(lines)-1 if start_line is not None else '?'}) {e}")
-        # Não interrompe ingestão
+    insert_data_bulk(table, cur, data, chunk_index, start_line, lines)
+    conn.commit()
     cur.close()
     conn.close()
     return len(lines)
