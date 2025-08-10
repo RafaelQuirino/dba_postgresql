@@ -33,7 +33,7 @@ END LOOP;
 END;
 $$;
 ```
-Possui os dados brutos ingeridos a partir dos arquivos:
+O SCHEMA raw_data possui os dados brutos ingeridos a partir dos arquivos:
     - ```producao.txt```
     - ```pessoa.txt``` 
     - ```equipe.txt```  
