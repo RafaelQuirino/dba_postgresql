@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS equipe(
 -- Schema raw_data, se ainda não existir
 CREATE SCHEMA IF NOT EXISTS raw_data;
 
--- Este script move todos os objetos do 'public' para o 'raw_data'
+-- Migrando todos os objetos do 'public' para o 'raw_data'
 DO $$
 DECLARE
 row record;
