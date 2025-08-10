@@ -12,20 +12,20 @@ ORDER BY total_producoes DESC;
 -- Atores mais ativos por tipo de produção
 CREATE OR REPLACE VIEW analytics.top_actors_by_type AS
 SELECT 
-    p.tipo_id,
+    pd.tipo_id,
     pe.nome,
     COUNT(*) AS participacoes
 FROM raw_data.equipe e
-JOIN raw_data.pessoa ps ON pe.pessoaID = e.pessoaID
-JOIN raw_data.producao pd ON p.producaoID = e.producaoID
-GROUP BY p.tipo_id, pe.nome
+JOIN raw_data.pessoa pe ON pe.pessoaID = e.pessoaID
+JOIN raw_data.producao pd ON pd.producaoID = e.producaoID
+GROUP BY pd.tipo_id, pe.nome
 HAVING COUNT(*) >= 10  -- ajustável
-ORDER BY p.tipo_id, participacoes DESC;
+ORDER BY pd.tipo_id, participacoes DESC;
 
 -- Evolução por ano
 CREATE OR REPLACE VIEW analytics.yearly_production_trends AS
 SELECT 
-    ano,
+    ano_producao,
     COUNT(*) AS total_producoes
 FROM raw_data.producao
 GROUP BY ano_producao
