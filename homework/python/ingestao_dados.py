@@ -6,7 +6,7 @@ import multiprocessing as mp
 from tqdm import tqdm
 import re
 
-CHUNK_SIZE = 10000
+CHUNK_SIZE = 20000
 N_WORKERS = max(1, mp.cpu_count() - 1)
 
 db_config = {
@@ -88,23 +88,25 @@ def insert_data_bulk(table, cur, data, chunk_index=None, start_line=None, lines=
     try:
         if table == 'producao':
             cur.executemany(
-                'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING',
+                'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id)' \
+                'VALUES (%s, %s, %s, %s)',
                 data
             )
         elif table == 'pessoa':
-            cur.executemany(
-                'INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING',
-                data
-            )
+            cur.executemany('INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING', data)
         elif table == 'equipe':
             cur.executemany(
-                'INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING',
+                '''
+                INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) 
+                ON CONFLICT (pessoa_id, producao_id) 
+                DO UPDATE SET papel = EXCLUDED.papel where EXCLUDED.papel IS NOT NULL
+                ''',
                 data
             )
         cur.connection.commit()
     except Exception as e:
-        print(f"[SQL ERROR] Chunk {chunk_index} (linhas {start_line}-{start_line+len(lines)-1 if start_line is not None and lines is not None else '?'}) {e}")
-        # Não interrompe ingestão
+        endline = start_line+len(lines)-1 if start_line is not None and lines is not None else '?'
+        print(f"[SQL ERROR] Chunk {chunk_index} (linhas {start_line}-{endline}) {e}")
 
 def insert_producao_tipo():
 	"""Cria e popula a tabela producao_tipo com todos os tipos encontrados."""
