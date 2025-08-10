@@ -9,9 +9,9 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     expose:
-      - 5432
+      - 5555
     ports:
-      - 5432:5432
+      - 5555:5432
 
   pgadmin:
     build:
@@ -36,8 +36,10 @@ services:
       context: .
       dockerfile: Dockerfile.python
     container_name: pubs-txt
+    command: python /homework/python/ingestao_dados.py
     volumes:
       - ./apps/pubs_txt:/app
+      - ./homework:/homework
     environment:
       DB_HOST: postgresql
       DB_PORT: 5432
