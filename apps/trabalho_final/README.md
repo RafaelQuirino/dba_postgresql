@@ -28,7 +28,7 @@ docker compose run trabalho-final bash
 
 4. Executar o script com:
 ```bash
-python3 inserir_raw_data.py
+python3 python/ingestao_de_dados.py
 ```
 
 ---
