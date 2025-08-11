@@ -14,21 +14,72 @@ Este script Python realiza a leitura de arquivos `.txt`, extrai os dados separad
 ---
 
 ### ⚙️ Como executar
-1. Adicionar os arquivos (equipe.txt, pessoa.txt e producao.txt) em apps/trabalho_final
-   
-2. Buildar e subir o docker com o comando:
+
+#### 1. Preparar os arquivos de entrada
+Coloque os arquivos `equipe.txt`, `pessoa.txt` e `producao.txt` dentro da pasta:
+```
+apps/trabalho_final/
+```
+
+---
+
+#### 2. Subir o ambiente Docker
 ```bash
 docker compose up -d
 ```
 
-3. Entrar no container docker com o comando:
+---
+
+#### 3. Criar o banco de dados
+No **pgAdmin** ou via **psql**:
+```sql
+CREATE DATABASE cinetech_productions;
+```
+
+---
+
+#### 4. Criar schemas e tabelas
+Dentro do banco `cinetech_productions`:
+1. Rode o script `sql/01_criacao_banco.sql` para criar os schemas (`raw_data`, `analytics`).
+2. Rode o script `sql/02_projeto_esquema_raw_data.sql` para criar as tabelas do **raw_data**.
+
+---
+
+#### 5. Inserir dados no `raw_data`
+1. Entre no container:
 ```bash
 docker compose run trabalho-final bash
 ```
-
-4. Executar o script com:
+2. Execute o script de ingestão (detalhado no tópico *Execução Principal*):
 ```bash
-python3 python/ingestao_de_dados.py
+python3 python/ingestao_dados.py
+```
+
+---
+
+#### 6. Criar e popular o `analytics`
+1. Rode o script `sql/02_projeto_esquema_analytics.sql` para criar as tabelas do **analytics**.
+2. Popule as tabelas do analytics com o **seed** que está em `sql/02_projeto_esquema_analytics_seeds.sql mesmo script.
+
+---
+
+#### 7. Criar roles e permissões
+```
+sql/03_gerenciamento_usuarios.sql
+```
+
+---
+
+#### 8. Criar views
+```
+sql/04_views_analytics.sql
+```
+
+---
+
+#### 9. Executar consultas analíticas
+```
+sql/05_consultas_analise.sql
 ```
 
 ---
