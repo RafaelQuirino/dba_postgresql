@@ -137,3 +137,9 @@ WHERE movieid = 33022;
 - Validação:
 
 ![imagem(7)](./imagem(7).png)
+
+- Retorna para o usuário padrão (postgres):
+
+```sql
+RESET ROLE;
+```
