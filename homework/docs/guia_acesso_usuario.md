@@ -76,34 +76,64 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA analytics TO data_s
 - Erros esperados (permission denied) confirmaram o isolamento correto por tabela.
 
 ## 📸 Evidências dos Testes: 
-
-- **Ativar o contexto do usuário**
+**1) Usuário `analyst_docs`**
+- Ativar o contexto do usuário
 ```sql
 SET ROLE analyst_docs;
 ```
-- **Espera-se que haja permissão**
+- Espera-se que haja permissão
 ```sql
 SELECT * FROM analytics.documentaries LIMIT 10;
 ```
 ![imagem](./imagem.png)
 
-- **Espera-se que não haja permissão**
+- Espera-se que não haja permissão
 
 ```sql
 SELECT * FROM analytics.movies LIMIT 10;
 ```
 ![imagem(1)](./imagem(1).png)
-- **Retorna para o usuário padrão (postgres):**
+
+- Retorna para o usuário padrão (postgres):
 
 ```sql
 RESET ROLE;
 ```
 ![imagem(2)](./imagem(2).png)
 
+**2) Usuário `data_scientist`: Leitura e Escrita**
+- Ativar o contexto do usuário
+```sql
+SET ROLE data_scientist;
+```
+- Leitura
+```sql
+SELECT COUNT(*) FROM analytics.tv_shows;
+```
+![imagem(3)](./imagem(3).png)
 
+- Escrita (com rollback)
+```sql
+BEGIN;
+UPDATE analytics.video_games
+SET titulo = titulo || ' [TESTE]' WHERE movieid = 33022;
+ROLLBACK;
+```
+![imagem(4)](./imagem(4).png)
 
+- Verificação:
 
+```sql
+SELECT titulo
+FROM analytics.video_games
+WHERE movieid = 33022;
+```
+![imagem(5)](./imagem(5).png)
 
+- Rollback
 
+![imagem(6)](./imagem(6).png)
 
-[def]: ./imagem1.png
+- Validação:
+
+![imagem(7)](./imagem(7).png)
