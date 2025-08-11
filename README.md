@@ -11,26 +11,38 @@
 ## 🗂️ Estrutura do Projeto
 
 ```text
-homework/
-├── Atividades/
-│   ├── JulioCesarPradoSouzaRodrigues_Atividade1.pdf
-│   ├── JulioCesarPradoSouzaRodrigues_Atividade2.pdf
-│   ├── JulioCesarPradoSouzaRodrigues_Atividade3.pdf
-│   ├── JulioCesarPradoSouzaRodrigues_Atividade4.pdf
-│   ├── JulioCesarPradoSouzaRodrigues_Laboratorio.pdf
-├── docs/
-│   ├── documentacao_esquema.md
-│   ├── guia_acesso_usuarios.md
-│   ├── backup_restauracao.md
-├── python/
-│   └── ingestao_dados.py
-├── sql/
-│   ├── 01_criacao_banco.sql
-│   ├── 02_projeto_esquema.sql
-│   ├── 03_gerenciamento_usuarios.sql
-│   ├── 04_views_analytics.sql
-│   ├── 05_consultas_analise.sql
-└── README.md
+.
+├── homework/
+│   ├── Atividades/
+│   │   ├── JulioCesarPradoSouzaRodrigues_Atividade1.pdf
+│   │   ├── JulioCesarPradoSouzaRodrigues_Atividade2.pdf
+│   │   ├── JulioCesarPradoSouzaRodrigues_Atividade3.pdf
+│   │   ├── JulioCesarPradoSouzaRodrigues_Atividade4.pdf
+│   │   └── JulioCesarPradoSouzaRodrigues_Laboratorio.pdf
+│   ├── data/                 # conteúdo ignorado via .gitignore
+│   │   ├── equipe.txt        
+│   │   ├── pessoa.txt        
+│   │   └── producao.txt      
+│   ├── docs/
+│   │   ├── backup_restauracao.md
+│   │   ├── documentacao_esquema.md
+│   │   └── guia_acesso_usuarios.md
+│   ├── python/
+│   │   └── ingestao_dados.py
+│   └── sql/
+│       ├── 01_criacao_banco.sql
+│       ├── 02_projeto_esquema.sql
+│       ├── 03_gerenciamento_usuarios.sql
+│       ├── 04_views_analytics.sql
+│       └── 05_consultas_analise.sql
+├── .env                      # (listado em .gitignore)
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile.pgadmin
+├── Dockerfile.python
+├── LICENSE
+├── README.md
+└── requirements.txt
 ```
 
 ## ⚙️ Requisitos
