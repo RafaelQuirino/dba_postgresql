@@ -32,6 +32,22 @@ GRANT USAGE ON SCHEMA analytics TO data_scientist;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA analytics TO data_scientist;
 GRANT ALL PRIVILEGES ON SCHEMA analytics TO data_scientist;
 
+-- Permissão de leitura em pessoa e equipe (analytics) para todos os analistas
+GRANT SELECT ON analytics.pessoa TO analyst_movies;
+GRANT SELECT ON analytics.pessoa TO analyst_tv;
+GRANT SELECT ON analytics.pessoa TO analyst_games;
+GRANT SELECT ON analytics.pessoa TO analyst_docs;
+GRANT SELECT ON analytics.pessoa TO analyst_all;
+GRANT SELECT ON analytics.pessoa TO data_scientist;
+
+-- Caso exista analytics.equipe, conceder também:
+GRANT SELECT ON analytics.equipe TO analyst_movies;
+GRANT SELECT ON analytics.equipe TO analyst_tv;
+GRANT SELECT ON analytics.equipe TO analyst_games;
+GRANT SELECT ON analytics.equipe TO analyst_docs;
+GRANT SELECT ON analytics.equipe TO analyst_all;
+GRANT SELECT ON analytics.equipe TO data_scientist;
+
 -- Revogar permissões extras (garantia de segurança)
 REVOKE ALL ON SCHEMA analytics FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA analytics FROM PUBLIC;
