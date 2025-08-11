@@ -154,17 +154,12 @@ def process_chunk(args):
     cur = conn.cursor()
     data = []
     parse_func = None
-    insert_func = None
-
     if table == 'producao':
         parse_func = parse_line_producao
-        insert_func = insert_producao
     elif table == 'pessoa':
         parse_func = parse_line_pessoa
-        insert_func = insert_pessoa
     elif table == 'equipe':
         parse_func = parse_line_equipe
-        insert_func = insert_equipe
     else:
         print(f"[ERRO] Tabela desconhecida: {table}")
         return len(lines)
