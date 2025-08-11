@@ -85,7 +85,7 @@ SET ROLE analyst_docs;
 ```sql
 SELECT * FROM analytics.documentaries LIMIT 10;
 ```
-![imagem](homework/docs/imagem1.png)
+![imagem](./homework/docs/imagem1.png)
 
 - **Espera-se que não haja permissão**
 
