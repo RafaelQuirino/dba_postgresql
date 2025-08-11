@@ -25,8 +25,17 @@
 │   │   └── producao.txt      
 │   ├── docs/
 │   │   ├── backup_restauracao.md
+│   │   ├── DER.png
 │   │   ├── documentacao_esquema.md
-│   │   └── guia_acesso_usuarios.md
+│   │   ├── guia_acesso_usuarios.md
+│   │   ├── imagem(1).png
+│   │   ├── imagem(2).png
+│   │   ├── imagem(3).png
+│   │   ├── imagem(4).png
+│   │   ├── imagem(5).png
+│   │   ├── imagem(6).png
+│   │   ├── imagem(7).png
+│   │   └── imagem.png
 │   ├── python/
 │   │   └── ingestao_dados.py
 │   └── sql/
