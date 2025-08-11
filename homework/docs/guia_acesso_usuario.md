@@ -92,6 +92,7 @@ SELECT * FROM analytics.documentaries LIMIT 10;
 ```sql
 SELECT * FROM analytics.movies LIMIT 10;
 ```
+
 - **Retorna para o usuário padrão (postgres):**
 
 ```sql
