@@ -85,7 +85,7 @@ SET ROLE analyst_docs;
 ```sql
 SELECT * FROM analytics.documentaries LIMIT 10;
 ```
-![ ](homework\docs\imagem1.png)
+![](C:\Users\Sara de Castro\Documents\GitHub\dba_postgresql\homework\docs\imagem1.png)
 
 - **Espera-se que não haja permissão**
 
