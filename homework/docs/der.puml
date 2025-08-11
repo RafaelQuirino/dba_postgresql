@@ -1,0 +1,28 @@
+@startuml
+entity "Producao" as Producao {
+  +producao_id : BIGINT <<PK>>
+  titulo : TEXT
+  ano_producao : INTEGER
+  producao_tipo_id : INTEGER
+}
+
+entity "Pessoa" as Pessoa {
+  +pessoa_id : BIGINT <<PK>>
+  nome : TEXT
+}
+
+entity "Equipe" as Equipe {
+  +producao_id : BIGINT <<PK,FK>>
+  +pessoa_id : BIGINT <<PK,FK>>
+  papel : TEXT
+}
+
+entity "ProducaoTipo" as ProducaoTipo {
+  +producao_tipo_id : INTEGER <<PK>>
+  nome : VARCHAR
+}
+
+ProducaoTipo ||--o{ Producao : "tipo"
+Producao ||--o{ Equipe : "tem equipe"
+Pessoa ||--o{ Equipe : "participa"
+@enduml
