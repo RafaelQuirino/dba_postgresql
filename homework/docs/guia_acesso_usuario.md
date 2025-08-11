@@ -77,17 +77,17 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA analytics TO data_s
 
 ## 📸 Evidências dos Testes: 
 **1) Usuário `analyst_docs`**
-- Ativar o contexto do usuário
+- Ativar o contexto do usuário:
 ```sql
 SET ROLE analyst_docs;
 ```
-- Espera-se que haja permissão
+- Espera-se que haja permissão:
 ```sql
 SELECT * FROM analytics.documentaries LIMIT 10;
 ```
 ![imagem](./imagem.png)
 
-- Espera-se que não haja permissão
+- Espera-se que não haja permissão:
 
 ```sql
 SELECT * FROM analytics.movies LIMIT 10;
@@ -102,17 +102,17 @@ RESET ROLE;
 ![imagem(2)](./imagem(2).png)
 
 **2) Usuário `data_scientist`: Leitura e Escrita**
-- Ativar o contexto do usuário
+- Ativar o contexto do usuário:
 ```sql
 SET ROLE data_scientist;
 ```
-- Leitura
+- Leitura:
 ```sql
 SELECT COUNT(*) FROM analytics.tv_shows;
 ```
 ![imagem(3)](./imagem(3).png)
 
-- Escrita (com rollback)
+- Escrita (com rollback):
 ```sql
 BEGIN;
 UPDATE analytics.video_games
@@ -130,7 +130,7 @@ WHERE movieid = 33022;
 ```
 ![imagem(5)](./imagem(5).png)
 
-- Rollback
+- Rollback:
 
 ![imagem(6)](./imagem(6).png)
 
@@ -143,3 +143,5 @@ WHERE movieid = 33022;
 ```sql
 RESET ROLE;
 ```
+
+- Dessa forma é possível notar que o usuário `data_scientist` realmente tem a permissão de **leitura** e **escrita**.
