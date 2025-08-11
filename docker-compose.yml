@@ -41,6 +41,7 @@ services:
       - ./apps/pubs_txt:/app
       - ./homework:/homework
     environment:
+      OMDB_API_KEY: ${OMDB_API_KEY}
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_NAME: pubs_txt_db
