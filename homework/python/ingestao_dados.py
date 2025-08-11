@@ -5,6 +5,7 @@ import psycopg2
 import multiprocessing as mp
 from tqdm import tqdm
 import re
+import time
 
 CHUNK_SIZE = 20000
 N_WORKERS = max(1, mp.cpu_count() - 1)
@@ -85,28 +86,42 @@ def insert_equipe(cur, record):
     return cur.rowcount
 
 def insert_data_bulk(table, cur, data, chunk_index=None, start_line=None, lines=None):
-    try:
-        if table == 'producao':
-            cur.executemany(
-                'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id)' \
-                'VALUES (%s, %s, %s, %s)',
-                data
-            )
-        elif table == 'pessoa':
-            cur.executemany('INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING', data)
-        elif table == 'equipe':
-            cur.executemany(
-                '''
-                INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) 
-                ON CONFLICT (pessoa_id, producao_id) 
-                DO UPDATE SET papel = EXCLUDED.papel where EXCLUDED.papel IS NOT NULL
-                ''',
-                data
-            )
-        cur.connection.commit()
-    except Exception as e:
-        endline = start_line+len(lines)-1 if start_line is not None and lines is not None else '?'
-        print(f"[SQL ERROR] Chunk {chunk_index} (linhas {start_line}-{endline}) {e}")
+    max_retries = 5
+    attempt = 0
+    while attempt < max_retries:
+        try:
+            if table == 'producao':
+                cur.executemany(
+                    'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id)'
+                    'VALUES (%s, %s, %s, %s)',
+                    data
+                )
+            elif table == 'pessoa':
+                cur.executemany('INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING', data)
+            elif table == 'equipe':
+                cur.executemany(
+                    '''
+                    INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) 
+                    ON CONFLICT (pessoa_id, producao_id) 
+                    DO UPDATE SET papel = EXCLUDED.papel where EXCLUDED.papel IS NOT NULL
+                    ''',
+                    data
+                )
+            cur.connection.commit()
+            return  # Sucesso, sai da função
+        except psycopg2.Error as e:
+            if getattr(e, 'pgcode', None) == '40P01':  # Deadlock detected
+                attempt += 1
+                wait = 2 ** attempt
+                print(f"[DEADLOCK] Chunk {chunk_index} (linhas {start_line}-{start_line+len(lines)-1 if start_line is not None and lines is not None else '?'}) - Tentativa {attempt}/{max_retries}. Retentando em {wait}s...")
+                time.sleep(wait)
+                cur.connection.rollback()
+            else:
+                endline = start_line+len(lines)-1 if start_line is not None and lines is not None else '?'
+                print(f"[SQL ERROR] Chunk {chunk_index} (linhas {start_line}-{endline}) {e}")
+                break
+    else:
+        print(f"[DEADLOCK] Chunk {chunk_index} (linhas {start_line}-{start_line+len(lines)-1 if start_line is not None and lines is not None else '?'}) - Falha após {max_retries} tentativas.")
 
 def insert_producao_tipo():
 	"""Cria e popula a tabela producao_tipo com todos os tipos encontrados."""
