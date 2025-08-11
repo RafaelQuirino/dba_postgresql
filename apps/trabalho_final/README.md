@@ -20,7 +20,6 @@ Coloque os arquivos `equipe.txt`, `pessoa.txt` e `producao.txt` dentro da pasta:
 ```
 apps/trabalho_final/
 ```
-
 ---
 
 #### 2. Subir o ambiente Docker
@@ -59,7 +58,7 @@ python3 python/ingestao_dados.py
 
 #### 6. Criar e popular o `analytics`
 1. Rode o script `sql/02_projeto_esquema_analytics.sql` para criar as tabelas do **analytics**.
-2. Popule as tabelas do analytics com o **seed** que está em `sql/02_projeto_esquema_analytics_seeds.sql mesmo script.
+2. Popule as tabelas do analytics com o **seed** que está em `sql/02_projeto_esquema_analytics_seeds.sql`.
 
 ---
 
