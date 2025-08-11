@@ -31,6 +31,25 @@ services:
     depends_on: 
       - postgresql
 
+  ingestao:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: ingestao
+    volumes:
+      - ./homework/data:/data
+      - ./homework/python:/app
+    environment:
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_NAME: cinetech_productions
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+    depends_on: 
+      - postgresql
+    # command: python ingestao_dados.py (Para fazer de forma automática)
+
+
   pubs-txt:
     build:
       context: .
