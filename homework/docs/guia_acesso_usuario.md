@@ -98,6 +98,7 @@ SELECT * FROM analytics.movies LIMIT 10;
 ```sql
 RESET ROLE;
 ```
+![imagem(2)](./imagem(2).png)
 
 
 
