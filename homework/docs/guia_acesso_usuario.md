@@ -92,7 +92,7 @@ SELECT * FROM analytics.documentaries LIMIT 10;
 ```sql
 SELECT * FROM analytics.movies LIMIT 10;
 ```
-
+![imagem(1)](./imagem(1).png)
 - **Retorna para o usuário padrão (postgres):**
 
 ```sql
