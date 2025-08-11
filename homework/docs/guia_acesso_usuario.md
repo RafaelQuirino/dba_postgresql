@@ -85,7 +85,7 @@ SET ROLE analyst_docs;
 ```sql
 SELECT * FROM analytics.documentaries LIMIT 10;
 ```
-![imagem](/imagem1.png)
+
 
 - **Espera-se que não haja permissão**
 
@@ -102,3 +102,6 @@ RESET ROLE;
 
 
 
+
+
+[def]: ./imagem1.png
