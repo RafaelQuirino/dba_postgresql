@@ -11,7 +11,7 @@ class Equipe(db.Model):
     producaoID = Column(Integer, ForeignKey('raw_data.producao.producaoID'), primary_key=True)
     pessoaID = Column(Integer, ForeignKey('raw_data.pessoa.pessoaID'), primary_key=True)
 
-    papel = Column(String(255), nullable=True)
+    papel = Column(db.Text, nullable=True)
 
     pessoa = relationship("Pessoa", back_populates="equipes")
     producao = relationship("Producao", back_populates="equipes")

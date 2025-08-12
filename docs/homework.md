@@ -185,7 +185,7 @@ Escrever consultas SQL para responder estas questões de negócio:
 2. **Quais são os 10 atores mais ativos em todos os tipos de produção?**
 3. **Como o número de produções mudou nos últimos 50 anos?**
 4. **Quais anos tiveram a maior produção?**
-5. **Qual porcentagem de produções tem membros da equipe com papéis específicos?**
+5. **Qual porcentagem de produções tem membros da equipe com papéis específicos?**-
 
 ---
 

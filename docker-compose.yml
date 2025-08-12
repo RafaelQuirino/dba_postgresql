@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # 1. Serviço do Banco de Dados
   postgresql:
@@ -8,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
-      POSTGRES_DB: cinetech_productions # Importante: crie o banco aqui
+      POSTGRES_DB: cinetech_productions
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
@@ -19,65 +17,149 @@ services:
       timeout: 5s
       retries: 5
 
-  # 2. Serviço de Migração (usa o Dockerfile.python)
+  # 2. Serviço de Criação do Schema/Tabelas (Bronze)
   db-migrator:
     build:
       context: .
-      dockerfile: Dockerfile.python # <--- Usa o Dockerfile do Python
+      dockerfile: Dockerfile.python
     container_name: db-migrator
     depends_on:
       postgresql:
-        condition: service_healthy # Espera o DB estar pronto
+        condition: service_healthy
     environment:
-      # Variáveis para o script de migração
       - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
       - FLASK_APP=apps.main
-    command: ["sh", "-c", "flask init-db --yes"]
+      - PYTHONPATH=/app
+    command: ["flask", "init-db", "--yes"]
 
-  # 3. Sua Aplicação Principal (também usa o Dockerfile.python)
+  # 3. Serviço de Ingestão de Dados (Bronze)
+  data-ingestor:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: data-ingestor
+    depends_on:
+      db-migrator:
+        condition: service_completed_successfully
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+      - PYTHONPATH=/app
+    command: ["flask", "ingest-data"]
+
+  # 4. Serviço que constrói a camada Silver (Views)
+  trusted-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: trusted-builder
+    depends_on:
+      data-ingestor:
+        condition: service_completed_successfully
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+      - PYTHONPATH=/app
+    command: ["flask", "build-trusted-layer"]
+  
+  # 5. Serviço que constrói a camada analytics (Tabelas)
+  analytics-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: analytics-builder
+    depends_on:
+      trusted-builder:
+        condition: service_completed_successfully
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+      - PYTHONPATH=/app
+    command: ["flask", "build-analytics-layer"]
+
+  # 6. Serviço de setup de usuários e permissões
+  permissions-setter:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: permissions-setter
+    depends_on:
+      analytics-builder:
+        condition: service_completed_successfully
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+      - PYTHONPATH=/app
+    command: ["flask", "setup-permissions"]
+
+  # 7. Serviço que cria as Views de Relatório (Analytics)
+  reporting-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: reporting-builder
+    depends_on:
+      permissions-setter: # <-- Espera as permissões serem aplicadas
+        condition: service_completed_successfully
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+      - PYTHONPATH=/app
+    command: ["flask", "create-reporting-views"]
+
+  # 8. Reporting Layer: KPI Views Builder
+  kpi-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: kpi-builder
+    depends_on:
+      reporting-builder: # <-- Waits for the previous step
+        condition: service_completed_successfully
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
+      - FLASK_APP=apps.main
+      - PYTHONPATH=/app
+    command: ["flask", "create-kpi-views"] # <-- The command to automate
+
+  # 9. Sua Aplicação Principal
   app:
     build:
       context: .
-      dockerfile: Dockerfile.python # <--- Usa o mesmo Dockerfile do Python
-    container_name: app-flask # Um nome claro para sua aplicação
+      dockerfile: Dockerfile.python
+    container_name: app-flask
     restart: always
     depends_on:
-      db-migrator:
-        # Só inicia DEPOIS que a migração terminou com sucesso
+      kpi-builder: # <-- ATUALIZADO: Espera o passo final da pipeline
         condition: service_completed_successfully
     environment:
-      # Variáveis para a aplicação
       - DATABASE_URL=postgresql://postgres:postgres123@postgresql:5432/cinetech_productions
       - FLASK_APP=apps.main
+      - PYTHONPATH=/app
     ports:
-      # Exemplo: Porta 8000 do seu PC para a porta 5000 do contêiner
       - "8000:5000"
-    command: ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 'apps.main:create_app()'"]
+    command: ["gunicorn", "--bind", "0.0.0.0:5000", "apps.main:create_app()"]
 
-  # 4. Interface Web do pgAdmin (usa o Dockerfile.pgadmin)
+  # 10. Interface Web do pgAdmin
   pgadmin:
     build:
       context: .
-      dockerfile: Dockerfile.pgadmin # <--- Usa o Dockerfile do pgAdmin
-    container_name: pgadmin-ui # Nome claro para a interface
+      dockerfile: Dockerfile.pgadmin
+    container_name: pgadmin-ui
     restart: always
+    depends_on:
+      kpi-builder: # <-- ATUALIZADO: Espera o passo final da pipeline
+        condition: service_completed_successfully
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin123
-      # Esta variável evita que o pgAdmin peça a senha mestre na primeira vez
       PGADMIN_SETUP_EMAIL: admin@admin.com
       PGADMIN_SETUP_PASSWORD: admin123
     volumes:
-      # O arquivo de servidores é montado para autoconfigurar a conexão
       - ./conf/pgadmin_servers.json:/pgadmin4/servers.json
       - pgadmin_data:/var/lib/pgadmin
     ports:
-      # Porta 8080 do seu PC para a porta 80 do contêiner
       - "8080:80"
-    depends_on:
-      db-migrator:
-        # Também espera a migração para garantir que o banco esteja pronto para ser explorado
-        condition: service_completed_successfully
 
 volumes:
   pg_data:

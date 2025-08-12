@@ -5,7 +5,7 @@ from flask import Flask
 # estão na raiz do projeto (um nível acima da pasta 'apps').
 # O Python conseguirá encontrá-las por causa de como o Docker é configurado.
 from database.db_instance import db
-from extensions import commands
+from extensions import commands , ingestion, trusted, analytics , permissions, reporting, kpi
 
 def create_app():
     """
@@ -27,6 +27,12 @@ def create_app():
     # Conecta as extensões com a instância da aplicação.
     db.init_app(app)
     commands.init_app(app)
+    ingestion.init_app(app)
+    trusted.init_app(app)
+    analytics.init_app(app)
+    permissions.init_app(app)
+    reporting.init_app(app)
+    kpi.init_app(app)
 
     # --- REGISTRO DE MODELOS E ROTAS (BLUEPRINTS) ---
     with app.app_context():
