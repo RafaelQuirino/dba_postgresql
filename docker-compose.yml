@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: cinetech_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123 # <-- Senha do banco
+      POSTGRES_DB: cinetech_productions  
+    ports:
+      - "5433:5432" 
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./data:/data
+      - ./sql:/app/sql 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cinetech_productions"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: python.Dockerfile
+    container_name: cinetech_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cinetech_productions
+      DB_USER: postgres
+      DB_PASSWORD: postgres123 # <-- Senha que o script usa (idêntica à de cima)
+      DATA_DIR: /data
+    volumes:
+      - ./python:/app 
+      - ./data:/data
+    working_dir: /app
+    command: tail -f /dev/null
+
+  pgadmin:
+    image: dpage/pgadmin4:8.13
+    container_name: cinetech_pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata: {}
