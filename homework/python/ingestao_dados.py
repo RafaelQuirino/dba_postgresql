@@ -6,12 +6,13 @@ import multiprocessing as mp
 from tqdm import tqdm
 import re
 import time
+from psycopg2 import pool
 
 CHUNK_SIZE = 20000
 N_WORKERS = max(1, mp.cpu_count() - 1)
 
 db_config = {
-	'host': os.getenv('PGHOST', 'postgresql'),
+	'host': os.getenv('HOST', 'postgresql'),
 	'port': os.getenv('PGPORT', '5432'),
 	'dbname': os.getenv('PGDATABASE', 'cinetech_productions'),
 	'user': os.getenv('PGUSER', 'postgres'),
@@ -26,7 +27,23 @@ files = {
 }
 
 def get_connection():
-	return psycopg2.connect(**db_config)
+    return psycopg2.connect(**db_config)
+
+    # Create a global connection pool
+    # if not hasattr(sys.modules[__name__], "_pg_pool"):
+    #     _pg_pool = pool.SimpleConnectionPool(
+    #         minconn=1,
+    #         maxconn=N_WORKERS * 2,
+    #         **db_config
+    #     )
+    #     sys.modules[__name__]._pg_pool = _pg_pool
+    # else:
+    #     _pg_pool = sys.modules[__name__]._pg_pool
+
+    # def _get_connection():
+    #     return _pg_pool.getconn()
+
+    # return _get_connection()
 
 def parse_line_producao(line):
     match = re.match(r'^\b(\d+)\b##(.*?)##\b(\d+)\b##\b(\d+)\b$', line.strip(), re.IGNORECASE)
@@ -63,27 +80,6 @@ def parse_line_equipe(line):
 	if papel.lower() == 'null':
 		papel = None
 	return (int(pessoa_id), int(producao_id), papel)
-
-def insert_producao(cur, record):
-    cur.execute(
-        'INSERT INTO raw_data.producao (producao_id, titulo, ano_producao, producao_tipo_id) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING',
-        record
-    )
-    return cur.rowcount
-
-def insert_pessoa(cur, record):
-    cur.execute(
-        'INSERT INTO raw_data.pessoa (pessoa_id, nome) VALUES (%s, %s) ON CONFLICT DO NOTHING',
-        record
-    )
-    return cur.rowcount
-
-def insert_equipe(cur, record):
-    cur.execute(
-        'INSERT INTO raw_data.equipe (pessoa_id, producao_id, papel) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING',
-        record
-    )
-    return cur.rowcount
 
 def insert_data_bulk(table, cur, data, chunk_index=None, start_line=None, lines=None):
     max_retries = 5
