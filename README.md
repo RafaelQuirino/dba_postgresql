@@ -1,8 +1,5 @@
 # CineTech Studios - Projeto de Banco de Dados (Trabalho Final DBA)
 
-Este repositório contém a implementação completa do projeto prático de Administração de Banco de Dados (DBA) para a empresa fictícia CineTech Studios. O projeto abrange desde a configuração do ambiente e a modelagem do banco de dados até a ingestão massiva de dados, gerenciamento de segurança e análises.
-
------
 
 ## Estrutura do Projeto
 
