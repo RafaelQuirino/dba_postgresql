@@ -4,14 +4,13 @@ services:
     container_name: cinetech_postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123 # <-- Senha do banco
-      POSTGRES_DB: cinetech_productions  
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: cinetech_productions
     ports:
-      - "5433:5432" 
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./data:/data
-      - ./sql:/app/sql 
+      - ./sql:/app/sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d cinetech_productions"]
       interval: 10s
@@ -31,13 +30,16 @@ services:
       DB_PORT: 5432
       DB_NAME: cinetech_productions
       DB_USER: postgres
-      DB_PASSWORD: postgres123 # <-- Senha que o script usa (idêntica à de cima)
+      DB_PASSWORD: postgres123
       DATA_DIR: /data
+      FLASK_APP: app.py
+      FLASK_ENV: development
+      FLASK_DEBUG: "1" # <-- ADICIONADO PARA FORÇAR O AUTO-RELOAD
     volumes:
-      - ./python:/app 
+      - ./python:/app
       - ./data:/data
-    working_dir: /app
-    command: tail -f /dev/null
+    ports:
+      - "5001:5000"
 
   pgadmin:
     image: dpage/pgadmin4:8.13

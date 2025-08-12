@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineTech Studios - Simulador de Acesso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .tab.active { border-color: #f59e0b; color: #b45309; }
+        .chart-container { position: relative; width: 100%; height: 400px; }
+        .search-input:focus { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4); border-color: #f59e0b; }
+        .result-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .result-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07); }
+        .detail-view, .loading-spinner, .error-message { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app" class="container mx-auto p-4 md:p-8 max-w-6xl">
+        <header class="text-center my-8">
+            <h1 class="text-5xl font-bold text-slate-800">CineTech Studios</h1>
+            <p class="text-slate-500 mt-4 text-lg">Simulador de Controle de Acesso e Dashboard de Análise</p>
+        </header>
+
+        <div class="mb-8 flex justify-center items-center gap-4 bg-amber-100 border border-amber-200 p-4 rounded-xl">
+            <label for="role-selector" class="font-semibold text-amber-800">Visualizando como:</label>
+            <select id="role-selector" class="p-2 border border-amber-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="postgres">Superusuário (Padrão)</option>
+                <option value="analyst_all">Analista Geral</option>
+                <option value="analyst_movies">Analista de Filmes</option>
+                <option value="analyst_tv">Analista de TV</option>
+                <option value="data_scientist">Cientista de Dados</option>
+            </select>
+        </div>
+
+        <div class="mb-8 border-b border-slate-200">
+            <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+                <button id="tab-explorer" class="tab active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">Explorador</button>
+                <button id="tab-dashboard" class="tab border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">Dashboard de Análise</button>
+            </nav>
+        </div>
+
+        <main id="main-content">
+            <div id="view-explorer">
+                <div id="search-view">
+                    <div class="relative mb-8"><input type="text" id="search-input" placeholder="Buscar por filmes, séries ou pessoas..." class="w-full p-4 pl-12 text-lg border-2 border-slate-300 rounded-full focus:outline-none search-input"></div>
+                    <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    <div id="placeholder-text" class="text-center py-16 text-slate-400"><p>Comece a digitar para encontrar produções.</p></div>
+                </div>
+                <div id="detail-view" class="hidden"></div>
+            </div>
+            <div id="view-dashboard" class="hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm"><h3 class="text-xl font-semibold text-slate-800 mb-4">Produções por Categoria</h3><div class="chart-container" id="summary-chart-container"><canvas id="summaryChart"></canvas></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm"><h3 class="text-xl font-semibold text-slate-800 mb-4">Top 10 Atores Mais Ativos</h3><div class="chart-container" id="actors-chart-container"><canvas id="topActorsChart"></canvas></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm col-span-1 lg:col-span-2"><h3 class="text-xl font-semibold text-slate-800 mb-4">Tendência de Produções (Últimos 50 Anos)</h3><div class="chart-container" id="trends-chart-container"><canvas id="trendsChart"></canvas></div></div>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const roleSelector = document.getElementById('role-selector');
+        
+        async function fetchWithRole(endpoint) {
+            const selectedRole = roleSelector.value;
+            const url = `${endpoint}${endpoint.includes('?') ? '&' : '?'}role=${selectedRole}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro na requisição.');
+            }
+            return data;
+        }
+
+        const tabExplorer = document.getElementById('tab-explorer');
+        const tabDashboard = document.getElementById('tab-dashboard');
+        const viewExplorer = document.getElementById('view-explorer');
+        const viewDashboard = document.getElementById('view-dashboard');
+
+        tabExplorer.addEventListener('click', () => {
+            viewExplorer.classList.remove('hidden');
+            viewDashboard.classList.add('hidden');
+            tabExplorer.classList.add('active');
+            tabDashboard.classList.remove('active');
+        });
+        tabDashboard.addEventListener('click', () => {
+            viewExplorer.classList.add('hidden');
+            viewDashboard.classList.remove('hidden');
+            tabExplorer.classList.remove('active');
+            tabDashboard.classList.add('active');
+            loadDashboardData();
+        });
+
+        const searchInput = document.getElementById('search-input');
+        const resultsContainer = document.getElementById('results-container');
+        const placeholderText = document.getElementById('placeholder-text');
+        const searchView = document.getElementById('search-view');
+        const detailView = document.getElementById('detail-view');
+        let searchTimeout;
+
+        function showLoading(container) { container.innerHTML = `<div class="loading-spinner col-span-full text-center py-16 text-slate-500">Buscando...</div>`; }
+        function showError(container, message) { container.innerHTML = `<div class="error-message col-span-full text-center py-16 text-red-500">${message}</div>`; }
+        
+        async function search(query) {
+            query = query.trim();
+            if (query.length < 3) { resultsContainer.innerHTML = ''; placeholderText.classList.remove('hidden'); return; }
+            placeholderText.classList.add('hidden');
+            showLoading(resultsContainer);
+            try {
+                const results = await fetchWithRole(`/api/search?q=${encodeURIComponent(query)}`);
+                renderResults(results);
+            } catch (error) { showError(resultsContainer, error.message); }
+        }
+
+        function renderResults(results) {
+            if (results.length === 0) { resultsContainer.innerHTML = `<p class="col-span-full text-center text-slate-500">Nenhum resultado encontrado.</p>`; return; }
+            resultsContainer.innerHTML = results.map(item => {
+                const cardType = item.type === 'movie' ? 'Produção' : 'Pessoa';
+                const color = item.type === 'movie' ? 'amber' : 'sky';
+                return `<div class="result-card bg-white rounded-xl p-6 cursor-pointer" onclick="showDetail('${item.type}', ${item.id})"><p class="text-xs font-semibold uppercase text-${color}-500">${cardType}</p><h3 class="text-xl font-bold text-slate-800 mt-1">${item.name}</h3><p class="text-slate-500">${item.year || ''}</p></div>`;
+            }).join('');
+        }
+
+        async function showDetail(type, id) {
+            searchView.classList.add('hidden');
+            detailView.classList.remove('hidden');
+            showLoading(detailView);
+            try {
+                const endpoint = type === 'movie' ? `/api/movies/${id}` : `/api/people/${id}`;
+                const data = await fetchWithRole(endpoint);
+                renderDetail(type, data);
+            } catch (error) { showError(detailView, error.message); }
+        }
+
+        function renderDetail(type, data) {
+            const color = type === 'movie' ? 'amber' : 'sky';
+            let contentHtml = '';
+            if (type === 'movie') {
+                contentHtml = `<div class="detail-view bg-white p-8 rounded-2xl shadow-lg"><button onclick="showSearch()" class="mb-6 text-${color}-600 font-semibold hover:text-${color}-800">← Voltar</button><p class="text-sm font-semibold uppercase text-${color}-500">Produção</p><h2 class="text-4xl font-bold text-slate-800 mt-1">${data.title}</h2><p class="text-2xl text-slate-400 mb-8">${data.year}</p><h3 class="text-2xl font-semibold text-slate-700 border-b pb-2 mb-4">Elenco</h3><ul class="space-y-3">${data.cast.map(p => `<li>${p.name}</li>`).join('') || '<li>N/A</li>'}</ul></div>`;
+            } else {
+                 contentHtml = `<div class="detail-view bg-white p-8 rounded-2xl shadow-lg"><button onclick="showSearch()" class="mb-6 text-${color}-600 font-semibold hover:text-${color}-800">← Voltar</button><p class="text-sm font-semibold uppercase text-${color}-500">Pessoa</p><h2 class="text-4xl font-bold text-slate-800 mt-1">${data.name}</h2><h3 class="text-2xl font-semibold text-slate-700 border-b pb-2 mt-8 mb-4">Filmografia</h3><ul class="space-y-3">${data.filmography.map(m => `<li>${m.title} (${m.year})</li>`).join('') || '<li>N/A</li>'}</ul></div>`;
+            }
+            detailView.innerHTML = contentHtml;
+        }
+
+        function showSearch() {
+            detailView.classList.add('hidden');
+            searchView.classList.remove('hidden');
+            searchInput.value = '';
+            resultsContainer.innerHTML = '';
+            placeholderText.classList.remove('hidden');
+        }
+
+        searchInput.addEventListener('keyup', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => { search(e.target.value); }, 300);
+        });
+
+        let charts = {};
+        function renderChart(containerId, canvasId, options) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<canvas id="${canvasId}"></canvas>`; // Limpa o container
+            if (charts[canvasId]) charts[canvasId].destroy();
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            charts[canvasId] = new Chart(ctx, options);
+        }
+        
+        function showChartError(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="flex items-center justify-center h-full text-red-500 font-semibold">${message}</div>`;
+        }
+
+        async function loadDashboardData() {
+            // Carrega cada gráfico individualmente para tratar erros de forma granular
+            fetchWithRole('/api/analytics/summary')
+                .then(data => renderChart('summary-chart-container', 'summaryChart', { type: 'bar', data: { labels: data.map(d => d.type), datasets: [{ label: 'Total', data: data.map(d => d.total), backgroundColor: '#f59e0b' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }))
+                .catch(err => showChartError('summary-chart-container', err.message));
+
+            fetchWithRole('/api/analytics/top-actors')
+                .then(data => renderChart('actors-chart-container', 'topActorsChart', { type: 'bar', data: { labels: data.map(d => d.name), datasets: [{ label: 'Nº de Produções', data: data.map(d => d.productions), backgroundColor: '#0ea5e9' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }))
+                .catch(err => showChartError('actors-chart-container', err.message));
+
+            fetchWithRole('/api/analytics/yearly-trends')
+                .then(data => renderChart('trends-chart-container', 'trendsChart', { type: 'line', data: { labels: data.map(d => d.year), datasets: [{ label: 'Produções por Ano', data: data.map(d => d.total), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }))
+                .catch(err => showChartError('trends-chart-container', err.message));
+        }
+        
+        roleSelector.addEventListener('change', () => {
+            const currentView = viewDashboard.classList.contains('hidden') ? 'explorer' : 'dashboard';
+            if (currentView === 'dashboard') loadDashboardData();
+            showSearch();
+        });
+    </script>
+</body>
+</html>
