@@ -34,7 +34,7 @@ A estrutura final do nosso projeto ficou organizada da seguinte forma:
 
 -----
 
-## Guia Rápido — Como Rodar o Projeto
+## Como Rodar o Projeto
 
 > **Requisitos:** Git e Docker (com Docker Compose V2) instalados.
 
