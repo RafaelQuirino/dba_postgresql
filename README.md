@@ -29,6 +29,8 @@ homework/
 │   └── guia_bonus_.md  
 └── README.md
 ```
+## MER
+<img width="1068" height="273" alt="DER" src="https://github.com/user-attachments/assets/53b647dd-e3d1-4088-8852-8b7c5edb72c1" />
 
 ---
 
