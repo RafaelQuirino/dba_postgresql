@@ -8,7 +8,7 @@ import re
 import time
 from psycopg2 import pool
 
-CHUNK_SIZE = 10000
+CHUNK_SIZE = 15000
 N_WORKERS = max(1, mp.cpu_count() - 1)
 
 db_config = {
@@ -26,22 +26,23 @@ files = {
 	'equipe': os.path.join(data_dir, 'equipe.txt'),
 }
 
-def get_connection():
-    # Create a global connection pool
-    if not hasattr(sys.modules[__name__], "_pg_pool"):
-        _pg_pool = pool.ThreadedConnectionPool(
+def get_pg_pool():
+    # Always create a new pool in each process (multiprocessing safe)
+    if not hasattr(get_pg_pool, "_pg_pool"):
+        get_pg_pool._pg_pool = pool.ThreadedConnectionPool(
             minconn=1,
-            maxconn=N_WORKERS * 20,
+            maxconn=10000,  # Set to a reasonable value for each process
             **db_config
         )
-        sys.modules[__name__]._pg_pool = _pg_pool
-    else:
-        _pg_pool = sys.modules[__name__]._pg_pool
+    return get_pg_pool._pg_pool
 
-    def _get_connection():
-        return _pg_pool.getconn()
+def get_connection():
+    return psycopg2.connect(**db_config)
+    # return get_pg_pool().getconn()
 
-    return _get_connection()
+def release_connection(conn):
+    conn.close()
+    # get_pg_pool().putconn(conn)
 
 def parse_line_producao(line):
     match = re.match(r'^\b(\d+)\b##(.*?)##\b(\d+)\b##\b(\d+)\b$', line.strip(), re.IGNORECASE)
@@ -134,7 +135,7 @@ def insert_producao_tipo():
 		)
 	conn.commit()
 	cur.close()
-	conn.close()
+	release_connection(conn)
 
 def process_chunk(args):
     # Suporte a chamada antiga e nova (com chunk_index e start_line)
@@ -182,7 +183,7 @@ def process_chunk(args):
     insert_data_bulk(table, cur, data, chunk_index, start_line, lines)
     conn.commit()
     cur.close()
-    conn.close()
+    release_connection(conn)
     return len(lines)
 
 def ingest_file(table):
