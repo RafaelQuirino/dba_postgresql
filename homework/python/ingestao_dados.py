@@ -8,7 +8,7 @@ import re
 import time
 from psycopg2 import pool
 
-CHUNK_SIZE = 20000
+CHUNK_SIZE = 10000
 N_WORKERS = max(1, mp.cpu_count() - 1)
 
 db_config = {
@@ -27,23 +27,21 @@ files = {
 }
 
 def get_connection():
-    return psycopg2.connect(**db_config)
-
     # Create a global connection pool
-    # if not hasattr(sys.modules[__name__], "_pg_pool"):
-    #     _pg_pool = pool.SimpleConnectionPool(
-    #         minconn=1,
-    #         maxconn=N_WORKERS * 2,
-    #         **db_config
-    #     )
-    #     sys.modules[__name__]._pg_pool = _pg_pool
-    # else:
-    #     _pg_pool = sys.modules[__name__]._pg_pool
+    if not hasattr(sys.modules[__name__], "_pg_pool"):
+        _pg_pool = pool.ThreadedConnectionPool(
+            minconn=1,
+            maxconn=N_WORKERS * 20,
+            **db_config
+        )
+        sys.modules[__name__]._pg_pool = _pg_pool
+    else:
+        _pg_pool = sys.modules[__name__]._pg_pool
 
-    # def _get_connection():
-    #     return _pg_pool.getconn()
+    def _get_connection():
+        return _pg_pool.getconn()
 
-    # return _get_connection()
+    return _get_connection()
 
 def parse_line_producao(line):
     match = re.match(r'^\b(\d+)\b##(.*?)##\b(\d+)\b##\b(\d+)\b$', line.strip(), re.IGNORECASE)
