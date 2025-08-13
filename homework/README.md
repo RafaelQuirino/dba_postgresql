@@ -9,6 +9,7 @@ Neste projeto, você acompanhará toda a jornada do administrador de banco de da
 | - Ingestão de dados com Python                                                        |
 | - Gerenciamento de usuários e controle de acesso                                      |
 | - Relatórios e visualizações com views personalizadas                                 |
+| - Estratégias de indexação e particionamento para otimização de consultas             |
 
 ---
 
